@@ -2,50 +2,52 @@ import Foundation
 
 enum AIDVoice {
     enum App {
-        static let name    = "Arena Repurpose Studio"
-        static let tagline = "Trasforma ogni idea in contenuto strutturato."
+        static let name = "Arena Repurpose Studio"
+        static let tagline = "Trasforma i tuoi contenuti"
     }
 
     enum Home {
-        static let recentProjects    = "Progetti recenti"
-        static let noRecentProjects  = "Nessun progetto ancora. Inizia con una nuova idea."
-        static let newContent        = "Nuovo contenuto"
-        static let goToArchive       = "Vai all'archivio completo"
-    }
-
-    enum NewContent {
-        static let title    = "Tipo di contenuto"
-        static let subtitle = "Seleziona il formato di partenza."
-    }
-
-    enum Capture {
-        static let placeholder  = "Scrivi o detta la tua idea.\nUsa il microfono della tastiera per la dettatura nativa iOS."
-        static let outputType   = "Formato di output"
-        static let saveAsDraft  = "Salva come bozza"
-        static let saved        = "Salvato"
-        static let titleField   = "Titolo (opzionale)"
+        static let recentProjects = "Recenti"
+        static let noRecentProjects = "Nessun progetto ancora.\nInizia catturando un'idea."
+        static let newContent = "Nuovo contenuto"
+        static let goToArchive = "Vedi tutti"
     }
 
     enum Archive {
-        static let title    = "Archivio"
-        static let empty    = "Nessun progetto salvato."
+        static let title = "Archivio"
+        static let empty = "Nessun contenuto salvato."
         static let filterAll = "Tutti"
     }
 
+    enum Capture {
+        static let titleField = "Titolo"
+        static let placeholder = "Scrivi la tua idea, nota o bozza..."
+        static let outputType = "Tipo output"
+        static let saveAsDraft = "Salva come bozza"
+    }
+
+    enum NewContent {
+        static let title = "Nuovo contenuto"
+        static let subtitle = "Scegli il formato"
+    }
+
     enum Detail {
-        static let content       = "Contenuto"
-        static let format        = "Formato"
-        static let status        = "Stato"
-        static let createdAt     = "Creato il"
-        static let edit          = "Modifica"
-        static let save          = "Salva"
+        static let content = "Contenuto"
+        static let createdAt = "Creato"
+        static let edit = "Modifica"
         static let composePrompt = "Componi prompt"
     }
 
     enum PromptComposer {
-        static let title   = "Prompt strutturato"
-        static let intro   = "Usa questo testo come base per uno strumento AI esterno. Il prompt applica metodo, struttura e obiettivo didattico al materiale grezzo."
-        static let copy    = "Copia prompt"
-        static let copied  = "Copiato"
+        static let title = "Compositore Prompt"
+        static let intro = "Seleziona un progetto per generare il prompt AI"
+        static let copy = "Copia"
+    }
+
+    static func relativeDate(_ date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.locale = Locale(identifier: "it_IT")
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
