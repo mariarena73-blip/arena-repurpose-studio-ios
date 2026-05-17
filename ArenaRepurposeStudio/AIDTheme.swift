@@ -1,32 +1,46 @@
 import SwiftUI
 
 extension Color {
-    static let aidDeepBlue    = Color(red: 16/255,  green: 3/255,   blue: 124/255)
-    static let aidPurpleBlue  = Color(red: 46/255,  green: 13/255,  blue: 116/255)
-    static let aidTealDigital = Color(red: 0/255,   green: 145/255, blue: 147/255)
-    static let aidEnergyYellow = Color(red: 255/255, green: 166/255, blue: 2/255)
-    static let aidCoral       = Color(red: 219/255, green: 101/255, blue: 82/255)
-    static let aidSupportGreen = Color(red: 149/255, green: 203/255, blue: 164/255)
+    static let aidOttanioScuro = Color(red: 46/255, green: 109/255, blue: 116/255)
+    static let aidOttanioMedio = Color(red: 0/255, green: 145/255, blue: 147/255)
+    static let aidTurchese = Color(red: 0/255, green: 212/255, blue: 210/255)
+    static let aidBluScuro = Color(red: 16/255, green: 50/255, blue: 92/255)
+    static let aidBluOceano = Color(red: 0/255, green: 84/255, blue: 147/255)
+    static let aidArancioOro = Color(red: 255/255, green: 166/255, blue: 2/255)
+    static let aidBeige = Color(red: 246/255, green: 239/255, blue: 220/255)
+    static let aidGrigioScuro = Color(red: 66/255, green: 66/255, blue: 66/255)
+    static let aidGrigioChiaro = Color(red: 146/255, green: 146/255, blue: 146/255)
+    static let aidFragola = Color(red: 194/255, green: 89/255, blue: 109/255)
+
+    static let aidDeepBlue = Color.aidBluOceano
+    static let aidPurpleBlue = Color.aidOttanioScuro
+    static let aidTealDigital = Color.aidTurchese
+    static let aidEnergyYellow = Color.aidArancioOro
+    static let aidCoral = Color.aidFragola
+    static let aidSupportGreen = Color.aidOttanioMedio
 }
 
 extension EditorialStatus {
-    var color: Color {
+    var uiColor: Color {
         switch self {
-        case .bozza:        return .aidEnergyYellow
-        case .daRivedere:   return .aidCoral
-        case .daPubblicare: return .aidTealDigital
-        case .pubblicato:   return .aidSupportGreen
-        case .archiviato:   return Color(.systemGray)
+        case .draft: return .aidGrigioChiaro
+        case .review: return .aidArancioOro
+        case .published: return .aidTurchese
         }
     }
 }
 
 enum AIDTheme {
     enum Color {
-        static let accentFallback      = SwiftUI.Color.aidDeepBlue
+        static let accentFallback      = SwiftUI.Color.aidTurchese
         static let backgroundFallback  = SwiftUI.Color(.systemBackground)
         static let primaryFallback     = SwiftUI.Color.primary
         static let secondaryFallback   = SwiftUI.Color.secondary
+        static let primaryGradient = LinearGradient(
+            colors: [.aidOttanioScuro, .aidTurchese],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 
     enum Font {

@@ -15,7 +15,7 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: AIDTheme.Spacing.xs) {
                     Text(AIDVoice.App.name)
                         .font(.system(size: 26, weight: .bold))
-                        .foregroundColor(.aidDeepBlue)
+                        .foregroundColor(.aidTurchese)
                     Text(AIDVoice.App.tagline)
                         .font(.system(size: 15))
                         .foregroundColor(.secondary)
@@ -30,7 +30,7 @@ struct HomeView: View {
                         .font(.system(size: 17, weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(AIDTheme.Spacing.md)
-                        .background(Color.aidDeepBlue)
+                        .background(AIDTheme.Color.primaryGradient)
                         .foregroundColor(.white)
                         .cornerRadius(AIDTheme.Corner.md)
                 }
@@ -39,7 +39,7 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: AIDTheme.Spacing.sm) {
                     Text(AIDVoice.Home.recentProjects)
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.aidDeepBlue)
+                        .foregroundColor(.aidTurchese)
 
                     if recentProjects.isEmpty {
                         Text(AIDVoice.Home.noRecentProjects)
@@ -98,16 +98,16 @@ struct ProjectRowView: View {
             HStack(spacing: AIDTheme.Spacing.xs) {
                 Image(systemName: project.projectType.icon)
                     .font(.system(size: 11))
-                Text(project.projectType.rawValue)
+                Text(project.projectType.displayName)
                     .font(.system(size: 12))
                 Text("·")
                 Text(project.createdAt, style: .date)
-                    .font(.system(size: 12))
+                        .font(.system(size: 12))
             }
-            .foregroundColor(.aidTealDigital)
+            .foregroundColor(.aidTurchese)
         }
         .padding(AIDTheme.Spacing.md)
-        .background(Color(.systemGray6))
+        .background(Color.aidGrigioScuro.opacity(0.45))
         .cornerRadius(AIDTheme.Corner.sm)
     }
 }
@@ -120,8 +120,8 @@ struct StatusBadge: View {
             .font(.system(size: 11, weight: .medium))
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
-            .background(status.color.opacity(0.18))
-            .foregroundColor(status.color)
+            .background(status.uiColor.opacity(0.18))
+            .foregroundColor(status.uiColor)
             .cornerRadius(6)
     }
 }

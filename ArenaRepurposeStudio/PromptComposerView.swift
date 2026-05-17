@@ -1,19 +1,31 @@
 import SwiftUI
+import UIKit
 
 struct PromptComposerView: View {
-    var project: Project? = nil
+    @EnvironmentObject private var storage: ProjectStorageService
     @Environment(\.dismiss) private var dismiss
+    @State private var selectedProject: Project?
     @State private var isCopied = false
+    @State private var shortcutFeedback: String?
+    @State private var shortcutInstallURL: URL?
+    private let showsCloseButton: Bool
+    private let notaShortcutURL = "shortcuts://run-shortcut?name=Ai%20Nota%20Taker&input=clipboard"
+    private let notaInstallURL = "https://www.icloud.com/shortcuts/83a662925948483dbffb2825f1953ea7"
+
+    init(project: Project? = nil, showsCloseButton: Bool = false) {
+        _selectedProject = State(initialValue: project)
+        self.showsCloseButton = showsCloseButton
+    }
 
     private var prompt: String {
-        guard let project else { return "" }
+        guard let project = selectedProject else { return "" }
         return """
         Contesto: \(project.projectType.promptContext)
 
         Materiale di partenza:
         \(project.rawContent)
 
-        Obiettivo: Trasforma il materiale di partenza in \(project.projectType.rawValue.lowercased()).
+        Obiettivo: Trasforma il materiale di partenza in \(project.projectType.displayName.lowercased()).
         Lingua: italiano.
         Struttura: chiara, diretta, orientata all'uso pratico in aula.
         Criteri di qualità: metodo verificabile, adattabile a diversi livelli, senza linguaggio promozionale.
@@ -22,38 +34,99 @@ struct PromptComposerView: View {
 
     var body: some View {
         Group {
-            if project == nil {
-                emptyState
+            if selectedProject == nil {
+                projectPicker
             } else {
                 composerContent
             }
         }
+        .toolbar {
+            if selectedProject != nil && showsCloseButton {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(AIDVoice.PromptComposer.close) { dismiss() }
+                }
+            }
+            if selectedProject != nil && !showsCloseButton {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(AIDVoice.PromptComposer.chooseProject) {
+                        selectedProject = nil
+                        shortcutFeedback = nil
+                        shortcutInstallURL = nil
+                        isCopied = false
+                    }
+                }
+            }
+        }
     }
 
-    private var emptyState: some View {
-        VStack(spacing: AIDTheme.Spacing.lg) {
-            Image(systemName: "wand.and.stars")
-                .font(.system(size: 48))
-                .foregroundColor(.aidTealDigital)
-            Text("Prompt strutturato")
-                .font(AIDTheme.Font.title)
-            Text("Seleziona un progetto dall'archivio per generare il prompt strutturato.")
-                .font(AIDTheme.Font.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, AIDTheme.Spacing.xl)
+    private var projectPicker: some View {
+        Group {
+            if storage.projects.isEmpty {
+                VStack(spacing: AIDTheme.Spacing.lg) {
+                    Image(systemName: "wand.and.stars")
+                        .font(.system(size: 48))
+                        .foregroundColor(.aidTealDigital)
+                    pickerIntro
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List {
+                    Section {
+                        pickerIntro
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                    }
+
+                    Section(AIDVoice.PromptComposer.chooseProject) {
+                        ForEach(storage.projects) { project in
+                            Button {
+                                selectedProject = project
+                                shortcutFeedback = nil
+                                shortcutInstallURL = nil
+                                isCopied = false
+                            } label: {
+                                ProjectRowView(project: project)
+                            }
+                            .buttonStyle(.plain)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(
+                                top: AIDTheme.Spacing.xs,
+                                leading: AIDTheme.Spacing.md,
+                                bottom: AIDTheme.Spacing.xs,
+                                trailing: AIDTheme.Spacing.md
+                            ))
+                        }
+                    }
+                }
+                .listStyle(.plain)
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle(AIDVoice.PromptComposer.title)
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var pickerIntro: some View {
+        VStack(alignment: .leading, spacing: AIDTheme.Spacing.sm) {
+            Text(AIDVoice.PromptComposer.title)
+                .font(AIDTheme.Font.title)
+                .foregroundColor(.aidTurchese)
+            Text(AIDVoice.PromptComposer.projectPickerGuide)
+                .font(AIDTheme.Font.body)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(AIDTheme.Spacing.md)
     }
 
     private var composerContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AIDTheme.Spacing.lg) {
-                Text(AIDVoice.PromptComposer.intro)
+                Text(AIDVoice.PromptComposer.promptToCopy)
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)
+
+                shortcutSection
 
                 Text(prompt)
                     .font(.system(.body, design: .monospaced))
@@ -70,7 +143,7 @@ struct PromptComposerView: View {
                     .font(.system(size: 16, weight: .medium))
                     .frame(maxWidth: .infinity)
                     .padding(AIDTheme.Spacing.md)
-                    .background(isCopied ? Color.aidSupportGreen : Color.aidDeepBlue)
+                    .background(isCopied ? Color.aidOttanioMedio : Color.aidOttanioScuro)
                     .foregroundColor(.white)
                     .cornerRadius(AIDTheme.Corner.md)
                 }
@@ -79,11 +152,6 @@ struct PromptComposerView: View {
         }
         .navigationTitle(AIDVoice.PromptComposer.title)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Chiudi") { dismiss() }
-            }
-        }
     }
 
     private func copyPrompt() {
@@ -91,6 +159,76 @@ struct PromptComposerView: View {
         isCopied = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             isCopied = false
+        }
+    }
+
+    private var shortcutSection: some View {
+        VStack(alignment: .leading, spacing: AIDTheme.Spacing.md) {
+            Text(AIDVoice.PromptComposer.shortcutSection)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.aidTurchese)
+
+            Text(AIDVoice.PromptComposer.shortcutNote)
+                .font(.system(size: 13))
+                .foregroundColor(.secondary)
+
+            Button {
+                runShortcut(
+                    urlString: notaShortcutURL,
+                    installURLString: notaInstallURL
+                )
+            } label: {
+                Label(AIDVoice.PromptComposer.note, systemImage: "note.text")
+                    .font(.system(size: 15, weight: .semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(AIDTheme.Spacing.md)
+                    .background(Color.aidArancioOro)
+                    .foregroundColor(.black)
+                    .cornerRadius(AIDTheme.Corner.md)
+            }
+
+            if let shortcutFeedback {
+                Text(shortcutFeedback)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.aidArancioOro)
+            }
+
+            if let shortcutInstallURL {
+                Button {
+                    UIApplication.shared.open(shortcutInstallURL)
+                } label: {
+                    Label(AIDVoice.PromptComposer.installShortcut, systemImage: "arrow.down.circle")
+                        .font(.system(size: 15, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(AIDTheme.Spacing.md)
+                        .background(Color.aidOttanioMedio)
+                        .foregroundColor(.white)
+                        .cornerRadius(AIDTheme.Corner.md)
+                }
+            }
+        }
+        .padding(AIDTheme.Spacing.md)
+        .background(Color.aidGrigioScuro.opacity(0.35))
+        .cornerRadius(AIDTheme.Corner.md)
+    }
+
+    private func runShortcut(urlString: String, installURLString: String) {
+        UIPasteboard.general.string = prompt
+        shortcutFeedback = nil
+        shortcutInstallURL = nil
+        let installURL = URL(string: installURLString)
+
+        guard let url = URL(string: urlString) else {
+            shortcutFeedback = AIDVoice.PromptComposer.shortcutUnavailableMessage
+            shortcutInstallURL = installURL
+            return
+        }
+
+        UIApplication.shared.open(url) { success in
+            if !success {
+                shortcutFeedback = AIDVoice.PromptComposer.shortcutUnavailableMessage
+                shortcutInstallURL = installURL
+            }
         }
     }
 }

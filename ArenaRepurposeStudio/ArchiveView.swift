@@ -15,7 +15,7 @@ struct ArchiveView: View {
                 VStack(spacing: AIDTheme.Spacing.md) {
                     Image(systemName: "archivebox")
                         .font(.system(size: 40))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.aidTurchese)
                     Text(AIDVoice.Archive.empty)
                         .font(.system(size: 16))
                         .foregroundColor(.secondary)
@@ -91,7 +91,7 @@ struct FilterChip: View {
                 .font(.system(size: 13, weight: .medium))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(isSelected ? Color.aidDeepBlue : Color(.systemGray5))
+                .background(isSelected ? Color.aidOttanioMedio : Color.aidGrigioScuro.opacity(0.6))
                 .foregroundColor(isSelected ? .white : .primary)
                 .cornerRadius(20)
         }

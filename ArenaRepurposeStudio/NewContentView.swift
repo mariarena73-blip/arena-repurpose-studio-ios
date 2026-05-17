@@ -9,7 +9,10 @@ private struct ContentEntry: Identifiable {
 }
 
 private let allEntries: [ContentEntry] = [
-    ContentEntry(title: "Idea vocale", description: "Detti o scrivi un'idea grezza. Scegli poi il formato.", icon: "mic.fill", defaultType: .quiz),
+    ContentEntry(title: "Idea vocale o testo dettato", description: "Detti o scrivi un'idea grezza. Scegli poi il formato.", icon: "mic.fill", defaultType: .quiz),
+    ContentEntry(title: "Post Facebook da adattare", description: "Incolla un post, anche in inglese, da tradurre e rielaborare.", icon: "bubble.left.and.bubble.right.fill", defaultType: .facebookPostAid),
+    ContentEntry(title: "Link YouTube o trascrizione", description: "Incolla un link o una trascrizione da trasformare localmente.", icon: "link.circle.fill", defaultType: .youtubeRepurpose),
+    ContentEntry(title: "Testo libero", description: "Parti da appunti, note o materiale gia scritto.", icon: "doc.text.fill", defaultType: .text),
     ContentEntry(title: "Quiz", description: "Domande con risposta corretta e distrattori.", icon: "questionmark.circle.fill", defaultType: .quiz),
     ContentEntry(title: "Flashcard", description: "Schede fronte/retro per studio attivo.", icon: "rectangle.stack.fill", defaultType: .flashcard),
     ContentEntry(title: "Script YouTube", description: "Struttura un video didattico dall'inizio alla fine.", icon: "play.rectangle.fill", defaultType: .youtubeScript),
@@ -46,7 +49,7 @@ struct NewContentView: View {
                                 VStack(alignment: .leading, spacing: AIDTheme.Spacing.sm) {
                                     Image(systemName: entry.icon)
                                         .font(.system(size: 22))
-                                        .foregroundColor(.aidDeepBlue)
+                                        .foregroundColor(.aidTurchese)
                                     Text(entry.title)
                                         .font(.system(size: 15, weight: .semibold))
                                         .foregroundColor(.primary)
@@ -58,7 +61,7 @@ struct NewContentView: View {
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(AIDTheme.Spacing.md)
-                                .background(Color(.systemGray6))
+                                .background(Color.aidGrigioScuro.opacity(0.45))
                                 .cornerRadius(AIDTheme.Corner.md)
                             }
                             .buttonStyle(.plain)

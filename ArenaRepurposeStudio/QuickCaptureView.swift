@@ -12,6 +12,21 @@ struct QuickCaptureView: View {
     @State private var isSaved = false
     @FocusState private var editorFocused: Bool
 
+    private let outputTypes: [ProjectType] = [
+        .quiz,
+        .flashcard,
+        .facebookPostAid,
+        .blogArticleAid,
+        .imagePrompt,
+        .presentationOutline,
+        .excalidrawDiagram,
+        .youtubeRepurpose,
+        .youtubeScript,
+        .conceptMap,
+        .infographic,
+        .text
+    ]
+
     init(defaultType: ProjectType, isSheetPresented: Binding<Bool>) {
         self.defaultType = defaultType
         self._isSheetPresented = isSheetPresented
@@ -57,12 +72,19 @@ struct QuickCaptureView: View {
                         .foregroundColor(.secondary)
                     Spacer()
                     Picker("", selection: $selectedType) {
-                        ForEach(ProjectType.allCases, id: \.self) { type in
-                            Label(type.rawValue, systemImage: type.icon).tag(type)
+                        ForEach(outputTypes, id: \.self) { type in
+                            Label(type.displayName, systemImage: type.icon).tag(type)
                         }
                     }
                     .pickerStyle(.menu)
-                    .tint(.aidDeepBlue)
+                    .tint(.aidTurchese)
+                }
+
+                if shouldShowYouTubeNote {
+                    Text(AIDVoice.Capture.youtubeTranscriptNote)
+                        .font(.system(size: 12))
+                        .foregroundColor(.aidArancioOro)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 Button(action: saveProject) {
@@ -79,29 +101,43 @@ struct QuickCaptureView: View {
             .padding(AIDTheme.Spacing.md)
             .background(Color(.systemBackground))
         }
-        .navigationTitle(selectedType.rawValue)
+        .navigationTitle(selectedType.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { editorFocused = true }
+    }
+
+    private var shouldShowYouTubeNote: Bool {
+        selectedType == .youtubeRepurpose && isOnlyYouTubeLink(content)
     }
 
     private var saveButtonColor: Color {
         if isSaved { return .aidSupportGreen }
         return content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? Color(.systemGray4)
-            : .aidDeepBlue
+            : .aidOttanioMedio
     }
 
     private func saveProject() {
         let project = Project(
             title: titleText,
-            rawContent: content,
-            projectType: selectedType,
-            status: .bozza
+            description: content,
+            type: selectedType,
+            status: .draft,
+            tags: [],
+            contentItems: [ContentItem(body: content, type: selectedType)],
+            createdAt: Date(),
+            updatedAt: Date()
         )
         storage.save(project)
         isSaved = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
             isSheetPresented = false
         }
+    }
+
+    private func isOnlyYouTubeLink(_ value: String) -> Bool {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.contains(where: { $0.isWhitespace }) else { return false }
+        return trimmed.contains("youtube.com") || trimmed.contains("youtu.be")
     }
 }
