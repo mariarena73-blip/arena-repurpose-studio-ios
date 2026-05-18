@@ -1,6 +1,37 @@
 # BUILD LOG — Arena Repurpose Studio iOS
 
-## Sessione 2026-05-16
+## Stato corrente verificato — 2026-05-18
+
+### Stato: BASELINE BUILDABILE
+
+Le build fallite registrate piu' sotto appartengono allo storico di recupero iniziale. Non rappresentano lo stato corrente del progetto.
+
+Baseline corrente:
+
+- Progetto SwiftUI nativo con Xcode project esistente.
+- Workflow operativo corrente: Codex Desktop locale, Xcode project, `xcodebuild` locale quando richiesto.
+- `xcodebuild` riuscito su `iPhone 17 Pro` Simulator.
+- Branch `master` allineato con `origin/master` dopo il commit remoto `bb38eb8 Document iOS Creator skill routing for Aid Repurpose`.
+- Nessun Expo, React Native, backend, API AI, App Intents o Share Extension introdotti.
+
+Verifica manuale Prompt/Nota su `iPhone 17 Pro` Simulator:
+
+- App avviata correttamente.
+- Home senza anomalie.
+- Tab Prompt funzionante.
+- Prompt visualizzato correttamente.
+- `Copia` funzionante: il prompt viene copiato negli appunti.
+- `Nota` funzionante per handoff: copia il prompt negli appunti e apre Comandi Rapidi.
+- Limite noto: se `Ai Nota Taker` non e' installato, Comandi Rapidi puo' mostrare "Il file non esiste". In quel caso il fallback iCloud interno all'app non scatta perche' iOS considera riuscita l'apertura dell'app Comandi Rapidi.
+
+Nota workflow:
+
+- Vibecode/`ios-cli` resta storico in questo repository, oppure valido solo se richiesto esplicitamente e configurato.
+- Per i task correnti in Codex Desktop locale, preferire SwiftUI nativo + Xcode project + `xcodebuild` quando viene richiesta una build.
+
+---
+
+## Sessione storica 2026-05-16
 
 ### Stato: BUILD FALLITA — errori Swift da risolvere
 
