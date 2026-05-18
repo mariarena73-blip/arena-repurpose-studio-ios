@@ -13,23 +13,42 @@
 **Tech stack:** Native iOS / SwiftUI / UserDefaults (JSON)  
 **NON usare:** React Native, Expo, SwiftData, Xcode manuale, istruzioni copia-incolla
 
+### Nota operativa 2026-05-18
+
+- Il repo non contiene skill proprie nel workspace; usa skill Codex installate globali.
+- La mappa delle skill utili allo sviluppo iOS/AID e' documentata in `docs/reusable-skills-found.md`.
+- La mappa guida i prompt Codex e non implica integrazione delle skill nell'app SwiftUI.
+- Non implementare ora dashboard, tab Skill o aree ispirate al PDF `app web corus ios builder app da imitare.pdf`.
+- Documentazione skill-routing aggiornata; prossimo passo: commit documentale dopo diff pulito.
+
+### Stato corrente verificato 2026-05-18
+
+- Baseline SwiftUI buildabile con `xcodebuild` su iPhone 17 Pro Simulator.
+- Commit `94c31d7` e `b31f6a7` pushati su `origin/master`; branch locale allineato prima della documentazione skill-routing.
+- Test manuale Prompt/Nota completato su simulatore: app avviata, Home ok, Prompt ok, Copia ok, Nota copia negli appunti e apre Comandi Rapidi.
+- `Ai Nota Taker` non era installato sul simulatore; Comandi Rapidi ha mostrato "Il file non esiste". Fallback iCloud non verificabile in quel caso perche' iOS considera riuscita l'apertura di Comandi Rapidi.
+
 ---
 
-## Stato Day 1
+## Stato Day 1 storico
 
-### ✅ Completato
+Questa sezione resta come contesto di recupero iniziale. Non rappresenta lo stato corrente del progetto.
+
+### ✅ Completato nella sessione storica
 - Bootstrap progetto Xcode (`ios-cli bootstrap`)
 - 12 file Swift scritti (views, model, service, theme)
 - App icon generata (Ideogram) e installata in `Assets.xcassets`
 - Primo commit + push su GitHub
 
-### ❌ Bloccato
+### ❌ Bloccato nella sessione storica
 - Build `ios-cli` fallita per errori Swift (vedi `BUILD_LOG.md`)
 - Fix preparati in locale ma NON committati al momento del push
 
 ---
 
-## AZIONE IMMEDIATA: fix build errors
+## AZIONE IMMEDIATA storica: fix build errors
+
+Questa procedura e' storica. Lo stato corrente verificato e' documentato nella nota operativa 2026-05-18 e in `docs/current-state.md`.
 
 ### Step 1 — Verifica stato locale
 
@@ -88,11 +107,13 @@ zip -r /tmp/arena-repurpose-studio.zip . -x ".git/*" -x "xcuserdata/*" -x "*.xcu
 3. Scrivi testo → "Salva come bozza" → ritorna a Home con progetto nella lista
 4. Tab "Archivio" → lista progetti
 5. Tap su progetto → ProjectDetailView con contenuti
-6. Tab "Prompt" → PromptComposerView stub ("Prossimamente")
+6. Tab "Prompt" → PromptComposerView stub ("Prossimamente") nella versione storica Day 1
 
 ---
 
 ## Regole operative (NON derogare)
+
+Nota: questa sezione appartiene alla procedura storica Vibecode/ios-cli e non si applica ai task correnti in Codex Desktop locale. Per il progetto corrente il workflow operativo e': SwiftUI nativo, Xcode project esistente, `xcodebuild` locale quando richiesto, nessun Expo, nessun backend, nessuna API AI.
 
 - Tutto tool-based: `ios-cli`, `git`, script Bash
 - NO istruzioni copia-incolla / snippet manuali all'utente

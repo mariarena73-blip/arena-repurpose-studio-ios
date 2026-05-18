@@ -1,76 +1,104 @@
 # Completion Roadmap
 
-This roadmap intentionally avoids new product features until the recovered app is build-stable and the local MVP flow works.
+This roadmap starts from the current verified baseline: the native SwiftUI app builds locally with `xcodebuild`, the `master` branch is aligned with `origin/master`, and the Prompt/Nota handoff has been manually checked on the `iPhone 17 Pro` Simulator.
 
-## Phase 1: Stabilize Data Model And Compile
+The roadmap still avoids backend, direct AI APIs, Expo, React Native, and new product surfaces until local iPhone flows and tests are intentionally expanded.
 
-Goal: make the app compile without changing the product scope.
+## Phase 1: Recover Build Baseline
 
-Recommended work:
+Status: completed.
 
-- Choose one canonical shape for `Project`.
-- Align `ProjectType` naming and computed helpers with all views.
-- Align `EditorialStatus` cases with the UI.
-- Resolve missing properties such as `rawContent`, `projectType`, `displayTitle`, and `promptContext`.
-- Resolve the `EditorialStatus.color` collision.
-- Review deployment target `26.0`.
-- Verify the build only after full Xcode is selected locally.
+Completed work:
 
-Classification: refactor.
+- Consolidated the SwiftUI data model, views, local JSON storage, AID theme, microcopy, and repurpose templates.
+- Verified the app with `xcodebuild` on `iPhone 17 Pro` Simulator.
+- Pushed the consolidated baseline to `origin/master` in commit `94c31d7 Consolidate local SwiftUI repurpose workflow`.
 
-## Phase 2: Realign Microcopy And `AIDVoice`
+Classification: completed baseline.
 
-Goal: make UI copy references complete and centralized.
+## Phase 2: Normalize Git And Recovery Documentation
 
-Recommended work:
+Status: completed.
 
-- Add or rename missing copy constants.
-- Keep user-facing strings in `AIDVoice` where practical.
-- Decide whether status labels are stored as enum raw values or presentation copy.
-- Keep app-specific microcopy in the app, not in the builder or skill-library.
+Completed work:
 
-Classification: keep-in-app.
+- Added recovery documentation and repository notes.
+- Pushed `b31f6a7 Add project recovery documentation` to `origin/master`.
+- Confirmed `master` is aligned with `origin/master` before the current skill-routing documentation update.
 
-## Phase 3: Validate Local MVP Flow
+Classification: completed documentation baseline.
 
-Goal: confirm the app can complete the core offline loop.
+## Phase 3: Document Post-Push Test And Skill Routing
 
-Validation flow:
+Status: in progress.
 
-1. Create content.
-2. Save as draft.
-3. See it on Home.
-4. Open Archive.
-5. Open Detail.
-6. Generate or copy Prompt.
+Current documentation work:
 
-This should be validated before adding AI, backend, authentication, or automations.
+- Record that the app launches correctly and Home shows no anomalies.
+- Record that the Prompt tab shows the prompt, `Copia` works, and `Nota` copies the prompt before opening Comandi Rapidi.
+- Record that `Ai Nota Taker` was missing on the simulator, producing "Il file non esiste"; the iCloud fallback could not be verified because iOS considered opening Comandi Rapidi successful.
+- Keep the skill map in `docs/reusable-skills-found.md` as Codex routing guidance, not runtime app behavior.
 
-Classification: keep-in-app.
+Recommended skill support:
 
-## Phase 4: Improve Minimal Tests
+- `skill-orchestrator` for skill catalog/routing checks.
+- `github:github` for read-only local/remote alignment checks.
+- `build-ios-apps` for local simulator and Xcode workflow checks.
 
-Goal: replace placeholder tests with a small safety net.
+Classification: documentation-only.
+
+## Phase 4: Add Small Local Tests
+
+Status: next step.
 
 Recommended tests:
 
 - `Project` encode/decode round trip.
-- `ProjectType` prompt-context behavior if kept in model.
-- `ProjectStorageService` save/load/delete behavior with an injectable file URL.
+- `ProjectType` display name and prompt-context behavior.
+- `ProjectStorageService` save/load/delete behavior with an injectable file URL or test-safe storage boundary.
 - UI smoke test for app launch.
-- UI smoke test for create content -> archive.
+- UI smoke test for create content -> archive -> detail -> prompt.
 
-Classification: refactor.
+Recommended skill support:
 
-## Phase 5: Evaluate AI, Backend, Or Automations Later
+- `build-ios-apps:test-triage` for XCTest and UI test failure analysis.
+- `build-ios-apps:swiftui-view-refactor` only when testability requires focused view cleanup.
 
-Goal: avoid adding infrastructure before the local MVP is stable.
+Classification: local test hardening.
 
-Only after Phases 1-4:
+## Phase 5: Consolidate AID Repurpose Quality
+
+Status: future local improvement.
+
+Recommended work:
+
+- Review prompt and template language against AID didactic use cases.
+- Keep transformations local and copy/Shortcut-based unless a future task explicitly approves API integration.
+- Use the skill map in `docs/reusable-skills-found.md` to choose the right Codex helper for each output type.
+- Prioritize `content-transformer`, `aid-agent-codex-docs`, `prompt-generator-for-codex`, `rap-post-didattici-skill`, and `pedagogia-applicata-ai-lab`.
+
+Classification: keep-in-app and documentation-guided.
+
+## Phase 6: Evaluate Backend Or API Integrations Later
+
+Status: future only.
+
+Only after local tests and prompt quality are stable:
 
 - Evaluate whether prompt composition remains local or calls an AI API.
 - Evaluate whether a backend is needed.
 - Evaluate whether builder automation can generate this app pattern.
 - Evaluate which patterns should migrate to the private skill-library.
+- Use `security-threat-model`, `openai-docs`, and `openai-developers:*` only if backend/API work is explicitly approved.
 
-Classification: document-only for now.
+Classification: future decision; not current scope.
+
+## Phase 7: Future Dashboard Inspiration
+
+Status: future design reference only.
+
+The PDF `app web corus ios builder app da imitare.pdf` can inspire a future advanced dashboard with areas such as Overview, Files, Skills, Channels, Connections, Cron jobs, and Terminal.
+
+Do not implement this UI now. Do not add new tabs. Do not modify `MainTabView`. Do not add a Skill screen until a separate UI task scopes it.
+
+Classification: future design reference.

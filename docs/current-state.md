@@ -9,15 +9,28 @@ The repository currently contains a small native iOS project:
 - `ArenaRepurposeStudio/Assets.xcassets/`: asset catalog with app icon and accent color.
 - `ArenaRepurposeStudioTests/`: XCTest target with placeholder tests.
 - `ArenaRepurposeStudioUITests/`: UI XCTest target with placeholder tests.
-- `BUILD_LOG.md`: previous build log and known Swift compiler errors.
-- `AGENT_HANDOFF.md`: previous agent handoff notes.
+- `BUILD_LOG.md`: historical recovery build log; not the current build state.
+- `AGENT_HANDOFF.md`: previous agent handoff notes plus current operating notes.
 
 ## Branch And Remote
 
 - Current branch: `master`
 - Tracking branch: `origin/master`
 - Remote URL: `https://github.com/mariarena73-blip/arena-repurpose-studio-ios.git`
+- Local repository and GitHub `origin/master` were aligned before the skill-routing documentation update.
+- Last known aligned commit before this documentation update: `94c31d7 Consolidate local SwiftUI repurpose workflow`.
+- Commit `b31f6a7 Add project recovery documentation` was also pushed to `origin/master`.
 - Working tree was clean before the documentation update.
+
+## Build And Manual Validation Baseline
+
+- The project has a buildable SwiftUI baseline.
+- `xcodebuild` succeeded on `iPhone 17 Pro` Simulator after the local SwiftUI repurpose workflow was consolidated.
+- The app launched successfully on the simulator and Home showed no anomalies.
+- The Prompt tab works: project selection, prompt display, and `Copia` were manually verified.
+- The `Nota` action copies the prompt to the pasteboard and opens Comandi Rapidi.
+- `Ai Nota Taker` was not installed on the simulator; Comandi Rapidi showed "Il file non esiste".
+- The iCloud fallback could not be verified in that simulator case because iOS considered opening Comandi Rapidi successful.
 
 ## Main Files
 
@@ -59,8 +72,24 @@ The service is appropriate for an MVP, but it currently has silent error handlin
 
 ## Existing Documentation
 
-- `BUILD_LOG.md`: records a failed build and known Swift issues from a previous session.
-- `AGENT_HANDOFF.md`: records intended next actions and operational rules, but contains older paths that should be corrected later.
+- `BUILD_LOG.md`: records a historical failed build and recovery context; treat it as history, not current state.
+- `AGENT_HANDOFF.md`: records earlier recovery context and current operational notes; older paths are historical unless repeated in current docs.
+- `docs/reusable-skills-found.md`: records reusable app patterns and the Codex skill-routing map for future development.
+
+## Skill Catalog State
+
+- The repository does not contain workspace-local Codex skills.
+- Development should use globally installed Codex skills when appropriate.
+- The skill map is documentation for agent routing and prompt planning; it is not an app feature and should not be integrated into the SwiftUI runtime.
+- Primary development routing is native iOS/SwiftUI first: `build-ios-apps`, SwiftUI UI/refactor/test skills, and GitHub inspection skills.
+- Primary content routing is AID repurpose first: transformation, prompt, didactic, social post, visual prompt, concept map, YouTube, Excalidraw, presentation, and blog-support skills.
+- Expo, React Native, web deploy, backend, and OpenAI/API skills are out of current scope unless a future task explicitly changes the product direction.
+
+## Future Visual Reference
+
+The PDF `app web corus ios builder app da imitare.pdf` may be used later as inspiration for an advanced dashboard concept with areas such as Overview, Files, Skills, Channels, Connections, Cron jobs, and Terminal.
+
+This is not part of the current app scope. Do not add tabs, screens, or dashboard UI from that reference during the current SwiftUI MVP phase.
 
 ## Already Usable
 
@@ -68,5 +97,7 @@ The service is appropriate for an MVP, but it currently has silent error handlin
 - keep: Local JSON storage approach for an MVP.
 - keep: Output taxonomy for educational repurposing formats.
 - keep: Prompt-composition concept.
-- refactor: Model/view integration before compilation can be trusted.
+- keep: Current SwiftUI baseline is buildable with local `xcodebuild`.
+- keep: Prompt/Shortcut handoff has a verified simulator baseline, with the noted limitation for missing Shortcuts.
 - document-only: Existing handoff and build log are useful as historical context.
+- document-only: Codex skill routing is useful for planning future work but is not runtime app behavior.
