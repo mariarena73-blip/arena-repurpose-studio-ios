@@ -1,6 +1,6 @@
 # Completion Roadmap
 
-This roadmap starts from the current verified baseline: the native SwiftUI app builds locally with `xcodebuild`, the `master` branch is aligned with `origin/master`, and the Prompt/Nota handoff has been manually checked on the `iPhone 17 Pro` Simulator.
+This roadmap starts from the current verified remote baseline: `af68fcb Realign repurpose workflow model and prompt composer` on `origin/master`. The native SwiftUI app builds locally with `xcodebuild`, targeted unit tests pass, and the Prompt/Nota handoff has been manually checked on the `iPhone 17 Pro` Simulator.
 
 The roadmap still avoids backend, direct AI APIs, Expo, React Native, and new product surfaces until local iPhone flows and tests are intentionally expanded.
 
@@ -24,20 +24,51 @@ Completed work:
 
 - Added recovery documentation and repository notes.
 - Pushed `b31f6a7 Add project recovery documentation` to `origin/master`.
-- Confirmed `master` is aligned with `origin/master` before the current skill-routing documentation update.
+- Confirmed `master` was aligned with `origin/master` before later documentation baselines.
 
 Classification: completed documentation baseline.
 
 ## Phase 3: Document Post-Push Test And Skill Routing
 
-Status: in progress.
+Status: completed.
 
-Current documentation work:
+Completed work:
 
 - Record that the app launches correctly and Home shows no anomalies.
 - Record that the Prompt tab shows the prompt, `Copia` works, and `Nota` copies the prompt before opening Comandi Rapidi.
-- Record that `Ai Nota Taker` was missing on the simulator, producing "Il file non esiste"; the iCloud fallback could not be verified because iOS considered opening Comandi Rapidi successful.
+- Record the current Shortcut handoff baseline, with Comandi Rapidi opening correctly and the URL/fallback values kept unchanged.
 - Keep the skill map in `docs/reusable-skills-found.md` as Codex routing guidance, not runtime app behavior.
+
+Classification: completed documentation baseline.
+
+## Phase 4: Realign Repurpose Workflow Model And Prompt Composer
+
+Status: completed.
+
+Completed work:
+
+- Pushed `af68fcb Realign repurpose workflow model and prompt composer` to `origin/master`.
+- Added `SourceKind`, `RepurposeContext`, `RepurposeAudience`, `RepurposeVoice`, and `RepurposeOutput`.
+- Extended `Project` with new repurpose workflow fields.
+- Added the legacy decoder for older saved drafts.
+- Added temporary `RepurposeOutput` -> `ProjectType` mapping.
+- Updated `NewContentView`, `QuickCaptureView`, `PromptComposerView`, and `ProjectDetailView`.
+- Updated `ArenaRepurposeStudioTests`.
+
+Validation:
+
+- `xcodebuild build` on `iPhone 17 Pro` Simulator: `BUILD SUCCEEDED`.
+- `xcodebuild test` only `ArenaRepurposeStudioTests`: `TEST SUCCEEDED`.
+- Minimal manual test on `iPhone 17 Pro` Simulator: `SUCCEEDED`.
+- `Copia` works.
+- `Nota` works.
+- Comandi Rapidi opens correctly.
+- URL Shortcut unchanged: `shortcuts://run-shortcut?name=Ai%20Nota%20Taker&input=clipboard`.
+- iCloud fallback unchanged: `https://www.icloud.com/shortcuts/83a662925948483dbffb2825f1953ea7`.
+
+Known limit:
+
+- Full `xcodebuild test` for the scheme was not rerun because the UI runner was already known as unstable. Treat that as a separate task.
 
 Recommended skill support:
 
@@ -45,16 +76,19 @@ Recommended skill support:
 - `github:github` for read-only local/remote alignment checks.
 - `build-ios-apps` for local simulator and Xcode workflow checks.
 
-Classification: documentation-only.
+Classification: completed code baseline.
 
-## Phase 4: Add Small Local Tests
+## Phase 5: Add Targeted Local Tests
 
-Status: next step.
+Status: next step / priority 1.
 
 Recommended tests:
 
 - `Project` encode/decode round trip.
-- `ProjectType` display name and prompt-context behavior.
+- Legacy `Project` decode coverage for pre-`af68fcb` saved drafts.
+- `SourceKind`, `RepurposeContext`, `RepurposeAudience`, `RepurposeVoice`, and `RepurposeOutput` display/prompt behavior.
+- `RepurposeOutput` -> `ProjectType` temporary mapping.
+- Master prompt content checks for source, context, audience, tone, output, structure, quality criteria, Italian language, no invented data, and insufficient-information handling.
 - `ProjectStorageService` save/load/delete behavior with an injectable file URL or test-safe storage boundary.
 - UI smoke test for app launch.
 - UI smoke test for create content -> archive -> detail -> prompt.
@@ -66,9 +100,21 @@ Recommended skill support:
 
 Classification: local test hardening.
 
-## Phase 5: Consolidate AID Repurpose Quality
+## Phase 6: Stabilize ProjectStorageService
 
-Status: future local improvement.
+Status: next step / priority 2.
+
+Recommended work:
+
+- Make storage tests deterministic.
+- Improve error visibility without introducing backend or networking.
+- Keep persistence local and JSON-based until a future task explicitly changes scope.
+
+Classification: local storage hardening.
+
+## Phase 7: Consolidate AID Repurpose Quality
+
+Status: priority 3 after targeted tests and storage stabilization.
 
 Recommended work:
 
@@ -79,7 +125,19 @@ Recommended work:
 
 Classification: keep-in-app and documentation-guided.
 
-## Phase 6: Evaluate Backend Or API Integrations Later
+## Phase 8: Small SwiftUI UI Improvements
+
+Status: priority 4 after tests and storage.
+
+Recommended work:
+
+- Make small, focused SwiftUI improvements only after the model, prompt, and storage tests are stable.
+- Keep existing tab structure and avoid new product surfaces unless a separate UI task scopes them.
+- Do not modify `MainTabView` as part of this roadmap step.
+
+Classification: future UI polish.
+
+## Phase 9: Evaluate Backend Or API Integrations Later
 
 Status: future only.
 
@@ -93,7 +151,7 @@ Only after local tests and prompt quality are stable:
 
 Classification: future decision; not current scope.
 
-## Phase 7: Future Dashboard Inspiration
+## Phase 10: Future Dashboard Inspiration
 
 Status: future design reference only.
 

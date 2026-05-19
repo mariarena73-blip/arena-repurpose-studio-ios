@@ -1,8 +1,8 @@
 # BUILD LOG — Arena Repurpose Studio iOS
 
-## Stato corrente verificato — 2026-05-18
+## Stato corrente verificato — 2026-05-19
 
-### Stato: BASELINE BUILDABILE
+### Stato: BASELINE REMOTA BUILDABILE
 
 Le build fallite registrate piu' sotto appartengono allo storico di recupero iniziale. Non rappresentano lo stato corrente del progetto.
 
@@ -10,19 +10,38 @@ Baseline corrente:
 
 - Progetto SwiftUI nativo con Xcode project esistente.
 - Workflow operativo corrente: Codex Desktop locale, Xcode project, `xcodebuild` locale quando richiesto.
-- `xcodebuild` riuscito su `iPhone 17 Pro` Simulator.
-- Branch `master` allineato con `origin/master` dopo il commit remoto `bb38eb8 Document iOS Creator skill routing for Aid Repurpose`.
+- Branch `master` allineato con `origin/master` dopo il commit remoto `af68fcb Realign repurpose workflow model and prompt composer`.
+- Il commit remoto completo della baseline corrente e' `af68fcbd0b5382432785c08ecf0ac60d1f5dfd66`.
 - Nessun Expo, React Native, backend, API AI, App Intents o Share Extension introdotti.
 
-Verifica manuale Prompt/Nota su `iPhone 17 Pro` Simulator:
+Riallineamento workflow/model/prompt composer:
+
+- Aggiunti `SourceKind`, `RepurposeContext`, `RepurposeAudience`, `RepurposeVoice`, `RepurposeOutput`.
+- `Project` esteso con nuovi campi per sorgente, contesto, destinatari, voce, output e note.
+- Decoder legacy aggiunto per mantenere compatibilita' con bozze salvate prima del nuovo modello.
+- Mapping temporaneo `RepurposeOutput` -> `ProjectType` aggiunto.
+- `NewContentView`, `QuickCaptureView`, `PromptComposerView` e `ProjectDetailView` aggiornate.
+- Test aggiornati in `ArenaRepurposeStudioTests`.
+
+Validazioni completate su `iPhone 17 Pro` Simulator:
+
+- `xcodebuild build -project ArenaRepurposeStudio.xcodeproj -scheme ArenaRepurposeStudio -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build`: `BUILD SUCCEEDED`.
+- `xcodebuild test -project ArenaRepurposeStudio.xcodeproj -scheme ArenaRepurposeStudio -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ArenaRepurposeStudioTests`: `TEST SUCCEEDED`.
+- Test manuale minimo: `SUCCEEDED`.
 
 - App avviata correttamente.
-- Home senza anomalie.
-- Tab Prompt funzionante.
-- Prompt visualizzato correttamente.
+- Flusso Nuovo contenuto aperto e progetto bozza creato con testo incollato, Scuola, BES, Prof Arena, Materiale didattico Markdown e note.
+- Progetto visibile in Home, dettaglio aperto e nuovi metadati visibili.
+- Prompt master verificato con sorgente, testo, contesto, destinatari, tono, output, italiano, struttura attesa, criteri qualita', divieto di inventare dati e richiesta di segnalare informazioni insufficienti.
 - `Copia` funzionante: il prompt viene copiato negli appunti.
 - `Nota` funzionante per handoff: copia il prompt negli appunti e apre Comandi Rapidi.
-- Limite noto: se `Ai Nota Taker` non e' installato, Comandi Rapidi puo' mostrare "Il file non esiste". In quel caso il fallback iCloud interno all'app non scatta perche' iOS considera riuscita l'apertura dell'app Comandi Rapidi.
+- URL Shortcut invariato: `shortcuts://run-shortcut?name=Ai%20Nota%20Taker&input=clipboard`.
+- Fallback iCloud invariato: `https://www.icloud.com/shortcuts/83a662925948483dbffb2825f1953ea7`.
+- Nessuna anomalia app osservata.
+
+Limite noto:
+
+- Il full `xcodebuild test` dello scheme non e' stato rilanciato perche' il runner UI era gia' noto come instabile. Trattarlo come task separato.
 
 Nota workflow:
 

@@ -19,14 +19,22 @@
 - La mappa delle skill utili allo sviluppo iOS/AID e' documentata in `docs/reusable-skills-found.md`.
 - La mappa guida i prompt Codex e non implica integrazione delle skill nell'app SwiftUI.
 - Non implementare ora dashboard, tab Skill o aree ispirate al PDF `app web corus ios builder app da imitare.pdf`.
-- Documentazione skill-routing aggiornata; prossimo passo: commit documentale dopo diff pulito.
+- Documentazione di stato aggiornata sulla baseline remota `af68fcb`; non integrare skill o nuove superfici UI nell'app.
 
-### Stato corrente verificato 2026-05-18
+### Stato corrente verificato 2026-05-19
 
 - Baseline SwiftUI buildabile con `xcodebuild` su iPhone 17 Pro Simulator.
-- Commit `94c31d7` e `b31f6a7` pushati su `origin/master`; branch locale allineato prima della documentazione skill-routing.
-- Test manuale Prompt/Nota completato su simulatore: app avviata, Home ok, Prompt ok, Copia ok, Nota copia negli appunti e apre Comandi Rapidi.
-- `Ai Nota Taker` non era installato sul simulatore; Comandi Rapidi ha mostrato "Il file non esiste". Fallback iCloud non verificabile in quel caso perche' iOS considera riuscita l'apertura di Comandi Rapidi.
+- Ultimo commit remoto noto su `origin/master`: `af68fcb Realign repurpose workflow model and prompt composer`.
+- Il micro-task codice di riallineamento workflow/model/prompt composer e' stato pushato correttamente su `origin/master`.
+- Workflow di repurposing riallineato: aggiunti `SourceKind`, `RepurposeContext`, `RepurposeAudience`, `RepurposeVoice`, `RepurposeOutput`; `Project` esteso con nuovi campi; decoder legacy aggiunto; mapping temporaneo `RepurposeOutput` -> `ProjectType` aggiunto.
+- View aggiornate nel micro-task codice: `NewContentView`, `QuickCaptureView`, `PromptComposerView`, `ProjectDetailView`.
+- Test aggiornati in `ArenaRepurposeStudioTests`.
+- Validazioni completate: `xcodebuild build` su iPhone 17 Pro Simulator `BUILD SUCCEEDED`; `xcodebuild test` solo `ArenaRepurposeStudioTests` `TEST SUCCEEDED`; test manuale minimo su iPhone 17 Pro Simulator `SUCCEEDED`.
+- Verifica manuale Prompt/Nota completata: app avviata, flusso Nuovo contenuto ok, progetto bozza creato, dettaglio aperto, metadati visibili, Prompt ok, `Copia` funzionante, `Nota` funzionante, Comandi Rapidi aperto correttamente.
+- URL Shortcut invariato: `shortcuts://run-shortcut?name=Ai%20Nota%20Taker&input=clipboard`.
+- Fallback iCloud invariato: `https://www.icloud.com/shortcuts/83a662925948483dbffb2825f1953ea7`.
+- Limite noto: il full `xcodebuild test` dello scheme non e' stato rilanciato perche' il runner UI era gia' noto come instabile. Trattarlo come task separato.
+- Prossimi step consigliati: 1) aggiungere test locali piu' mirati sul nuovo modello e sul prompt master; 2) stabilizzare `ProjectStorageService`; 3) consolidare template e prompt master locali; 4) piccoli miglioramenti UI SwiftUI solo dopo test e storage.
 
 ---
 
