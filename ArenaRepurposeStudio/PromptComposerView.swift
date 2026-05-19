@@ -74,6 +74,10 @@ struct PromptComposerView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selectedProject: Project?
     @State private var isCopied = false
+    @State private var generatedGenerationRequest: String
+    @State private var currentGenerationRequest: String
+    @State private var isEditingRequest = false
+    @State private var requestFeedback: String?
     @State private var shortcutFeedback: String?
     @State private var shortcutInstallURL: URL?
     @State private var openRouterAPIKey = ""
@@ -87,13 +91,20 @@ struct PromptComposerView: View {
     private let notaInstallURL = "https://www.icloud.com/shortcuts/83a662925948483dbffb2825f1953ea7"
 
     init(project: Project? = nil, showsCloseButton: Bool = false) {
+        let generatedRequest = project.map { PromptMasterBuilder.prompt(for: $0) } ?? ""
+        let currentRequest = PromptComposerView.initialRequest(
+            for: project,
+            generatedRequest: generatedRequest
+        )
         _selectedProject = State(initialValue: project)
+        _generatedGenerationRequest = State(initialValue: generatedRequest)
+        _currentGenerationRequest = State(initialValue: currentRequest)
+        _openRouterOutput = State(initialValue: PromptComposerView.initialGeneratedOutput(for: project))
         self.showsCloseButton = showsCloseButton
     }
 
     private var prompt: String {
-        guard let project = selectedProject else { return "" }
-        return PromptMasterBuilder.prompt(for: project)
+        currentGenerationRequest
     }
 
     var body: some View {
@@ -115,6 +126,7 @@ struct PromptComposerView: View {
                     Button(AIDVoice.PromptComposer.chooseProject) {
                         selectedProject = nil
                         resetGeneratedState()
+                        resetRequestState()
                     }
                 }
             }
@@ -140,10 +152,9 @@ struct PromptComposerView: View {
                     }
 
                     Section(AIDVoice.PromptComposer.chooseProject) {
-                        ForEach(storage.projects) { project in
+                        ForEach(storage.projects.sortedForDisplay) { project in
                             Button {
-                                selectedProject = project
-                                resetGeneratedState()
+                                configureSelectedProject(project)
                             } label: {
                                 ProjectRowView(project: project)
                             }
@@ -185,20 +196,7 @@ struct PromptComposerView: View {
                 shortcutSection
                 openRouterSection
 
-                Text(AIDVoice.PromptComposer.promptToCopy)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.aidTurchese)
-
-                Text(AIDVoice.PromptComposer.technicalViewNote)
-                    .font(.system(size: 13))
-                    .foregroundColor(.secondary)
-
-                Text(prompt)
-                    .font(.system(.body, design: .monospaced))
-                    .padding(AIDTheme.Spacing.md)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(AIDTheme.Corner.sm)
+                editableRequestSection
 
                 Button(action: copyPrompt) {
                     Label(
@@ -239,6 +237,134 @@ struct PromptComposerView: View {
         openRouterOutput = nil
         openRouterModelUsed = nil
         openRouterErrorMessage = nil
+    }
+
+    private func resetRequestState() {
+        generatedGenerationRequest = ""
+        currentGenerationRequest = ""
+        isEditingRequest = false
+        requestFeedback = nil
+    }
+
+    private func configureSelectedProject(_ project: Project) {
+        let generatedRequest = PromptMasterBuilder.prompt(for: project)
+        selectedProject = project
+        generatedGenerationRequest = generatedRequest
+        currentGenerationRequest = Self.initialRequest(
+            for: project,
+            generatedRequest: generatedRequest
+        )
+        resetGeneratedState()
+        openRouterOutput = Self.initialGeneratedOutput(for: project)
+        requestFeedback = nil
+        isEditingRequest = false
+    }
+
+    private static func initialRequest(
+        for project: Project?,
+        generatedRequest: String
+    ) -> String {
+        let customRequest = project?.customGenerationRequest?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let customRequest, !customRequest.isEmpty else {
+            return generatedRequest
+        }
+        return customRequest
+    }
+
+    private static func initialGeneratedOutput(for project: Project?) -> String? {
+        let output = project?.generatedOutput?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return output?.isEmpty == true ? nil : output
+    }
+
+    private var editableRequestSection: some View {
+        VStack(alignment: .leading, spacing: AIDTheme.Spacing.md) {
+            HStack {
+                VStack(alignment: .leading, spacing: AIDTheme.Spacing.xs) {
+                    Text(AIDVoice.PromptComposer.promptToCopy)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.aidTurchese)
+
+                    Text(AIDVoice.PromptComposer.technicalViewNote)
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Toggle("Modifica richiesta", isOn: $isEditingRequest)
+                    .font(.system(size: 13, weight: .medium))
+                    .toggleStyle(.switch)
+                    .accessibilityLabel("Modifica richiesta")
+            }
+
+            if isEditingRequest {
+                TextEditor(text: $currentGenerationRequest)
+                    .font(.system(.body, design: .monospaced))
+                    .frame(minHeight: 320)
+                    .padding(AIDTheme.Spacing.sm)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(AIDTheme.Corner.sm)
+            } else {
+                Text(prompt)
+                    .font(.system(.body, design: .monospaced))
+                    .padding(AIDTheme.Spacing.md)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(AIDTheme.Corner.sm)
+            }
+
+            HStack(spacing: AIDTheme.Spacing.sm) {
+                Button {
+                    restoreGeneratedRequest()
+                } label: {
+                    Label("Ripristina richiesta generata", systemImage: "arrow.counterclockwise")
+                        .font(.system(size: 13, weight: .semibold))
+                }
+                .buttonStyle(.bordered)
+
+                Button {
+                    saveCurrentRequest()
+                } label: {
+                    Label("Salva richiesta corrente", systemImage: "square.and.arrow.down")
+                        .font(.system(size: 13, weight: .semibold))
+                }
+                .buttonStyle(.bordered)
+            }
+
+            if let requestFeedback {
+                Text(requestFeedback)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.aidTurchese)
+            }
+        }
+    }
+
+    private func restoreGeneratedRequest() {
+        currentGenerationRequest = generatedGenerationRequest
+        if var project = selectedProject {
+            project.customGenerationRequest = nil
+            selectedProject = project
+            storage.save(project)
+        }
+        requestFeedback = "Richiesta generata ripristinata"
+        clearRequestFeedbackLater()
+    }
+
+    private func saveCurrentRequest() {
+        guard var project = selectedProject else { return }
+        let trimmedCurrent = currentGenerationRequest.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedGenerated = generatedGenerationRequest.trimmingCharacters(in: .whitespacesAndNewlines)
+        project.customGenerationRequest = trimmedCurrent == trimmedGenerated ? nil : currentGenerationRequest
+        selectedProject = project
+        storage.save(project)
+        requestFeedback = "Richiesta corrente salvata"
+        clearRequestFeedbackLater()
+    }
+
+    private func clearRequestFeedbackLater() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            requestFeedback = nil
+        }
     }
 
     private var openRouterSection: some View {
@@ -342,11 +468,22 @@ struct PromptComposerView: View {
             )
             openRouterOutput = result.content
             openRouterModelUsed = result.model
+            persistGeneratedOutput(result.content)
         } catch let error as LocalizedError {
             openRouterErrorMessage = error.errorDescription ?? "Errore OpenRouter non previsto."
         } catch {
             openRouterErrorMessage = "Errore OpenRouter non previsto."
         }
+    }
+
+    private func persistGeneratedOutput(_ output: String) {
+        guard var project = selectedProject else { return }
+        project.generatedOutput = output
+        let trimmedCurrent = currentGenerationRequest.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedGenerated = generatedGenerationRequest.trimmingCharacters(in: .whitespacesAndNewlines)
+        project.customGenerationRequest = trimmedCurrent == trimmedGenerated ? nil : currentGenerationRequest
+        selectedProject = project
+        storage.save(project)
     }
 
     private var shortcutSection: some View {

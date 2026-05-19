@@ -5,7 +5,7 @@ struct HomeView: View {
     @State private var showNewContent = false
 
     private var recentProjects: [Project] {
-        Array(storage.projects.prefix(5))
+        Array(storage.projects.sortedForDisplay.prefix(5))
     }
 
     var body: some View {
@@ -93,6 +93,12 @@ struct ProjectRowView: View {
                     .foregroundColor(.primary)
                     .lineLimit(1)
                 Spacer()
+                if project.isFavorite {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.aidArancioOro)
+                        .accessibilityLabel("Preferito")
+                }
                 StatusBadge(status: project.status)
             }
             HStack(spacing: AIDTheme.Spacing.xs) {
@@ -109,6 +115,17 @@ struct ProjectRowView: View {
         .padding(AIDTheme.Spacing.md)
         .background(Color.aidGrigioScuro.opacity(0.45))
         .cornerRadius(AIDTheme.Corner.sm)
+    }
+}
+
+extension Array where Element == Project {
+    var sortedForDisplay: [Project] {
+        sorted { lhs, rhs in
+            if lhs.isFavorite != rhs.isFavorite {
+                return lhs.isFavorite && !rhs.isFavorite
+            }
+            return lhs.updatedAt > rhs.updatedAt
+        }
     }
 }
 

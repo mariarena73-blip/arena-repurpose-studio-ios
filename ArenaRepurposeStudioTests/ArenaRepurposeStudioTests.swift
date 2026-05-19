@@ -36,6 +36,9 @@ final class ArenaRepurposeStudioTests: XCTestCase {
             customAudience: "Docenti di sostegno e studenti BES",
             repurposeVoice: .profArena,
             requestedOutput: .excalidrawSchema,
+            isFavorite: true,
+            customGenerationRequest: "Richiesta modificata manualmente",
+            generatedOutput: "Output finale salvato",
             createdAt: createdAt,
             updatedAt: updatedAt
         )
@@ -67,6 +70,9 @@ final class ArenaRepurposeStudioTests: XCTestCase {
         XCTAssertEqual(decoded.audienceDisplayName, "Docenti di sostegno e studenti BES")
         XCTAssertEqual(decoded.repurposeVoice, .profArena)
         XCTAssertEqual(decoded.requestedOutput, .excalidrawSchema)
+        XCTAssertTrue(decoded.isFavorite)
+        XCTAssertEqual(decoded.customGenerationRequest, "Richiesta modificata manualmente")
+        XCTAssertEqual(decoded.generatedOutput, "Output finale salvato")
         XCTAssertEqual(decoded.rawContent, "Capitolo 2 del PDF su inclusione motoria")
         XCTAssertEqual(decoded.createdAt, createdAt)
         XCTAssertEqual(decoded.updatedAt, updatedAt)
@@ -109,6 +115,37 @@ final class ArenaRepurposeStudioTests: XCTestCase {
         XCTAssertEqual(decoded.customAudience, "")
         XCTAssertEqual(decoded.repurposeVoice, .aid)
         XCTAssertEqual(decoded.requestedOutput, .teachingMaterialMarkdown)
+        XCTAssertFalse(decoded.isFavorite)
+        XCTAssertNil(decoded.customGenerationRequest)
+        XCTAssertNil(decoded.generatedOutput)
+    }
+
+    func testProjectDefaultsFavoriteAndGenerationFields() {
+        let project = Project(title: "Default")
+
+        XCTAssertFalse(project.isFavorite)
+        XCTAssertNil(project.customGenerationRequest)
+        XCTAssertNil(project.generatedOutput)
+    }
+
+    func testFavoriteProjectsSortBeforeRecentProjects() {
+        let olderFavorite = Project(
+            title: "Preferito",
+            isFavorite: true,
+            createdAt: Date(timeIntervalSince1970: 10),
+            updatedAt: Date(timeIntervalSince1970: 10)
+        )
+        let newerRegular = Project(
+            title: "Recente",
+            isFavorite: false,
+            createdAt: Date(timeIntervalSince1970: 20),
+            updatedAt: Date(timeIntervalSince1970: 20)
+        )
+
+        let sorted = [newerRegular, olderFavorite].sortedForDisplay
+
+        XCTAssertEqual(sorted.first?.title, "Preferito")
+        XCTAssertEqual(sorted.last?.title, "Recente")
     }
 
     func testRepurposeOutputUsesTemporaryProjectTypeMapping() {

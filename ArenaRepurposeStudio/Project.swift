@@ -334,6 +334,9 @@ struct Project: Identifiable, Codable {
     var customAudience: String = ""
     var repurposeVoice: RepurposeVoice = .aid
     var requestedOutput: RepurposeOutput = .teachingMaterialMarkdown
+    var isFavorite: Bool = false
+    var customGenerationRequest: String?
+    var generatedOutput: String?
     var createdAt: Date = Date()
     var updatedAt: Date = Date()
 
@@ -356,6 +359,9 @@ struct Project: Identifiable, Codable {
         customAudience: String = "",
         repurposeVoice: RepurposeVoice = .aid,
         requestedOutput: RepurposeOutput? = nil,
+        isFavorite: Bool = false,
+        customGenerationRequest: String? = nil,
+        generatedOutput: String? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -375,6 +381,9 @@ struct Project: Identifiable, Codable {
         self.customAudience = customAudience
         self.repurposeVoice = repurposeVoice
         self.requestedOutput = requestedOutput ?? RepurposeOutput(projectType: type)
+        self.isFavorite = isFavorite
+        self.customGenerationRequest = customGenerationRequest
+        self.generatedOutput = generatedOutput
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -447,6 +456,9 @@ struct Project: Identifiable, Codable {
         case customAudience
         case repurposeVoice
         case requestedOutput
+        case isFavorite
+        case customGenerationRequest
+        case generatedOutput
         case createdAt
         case updatedAt
     }
@@ -476,6 +488,9 @@ struct Project: Identifiable, Codable {
         customAudience = try container.decodeIfPresent(String.self, forKey: .customAudience) ?? ""
         repurposeVoice = try container.decodeIfPresent(RepurposeVoice.self, forKey: .repurposeVoice) ?? .aid
         requestedOutput = try container.decodeIfPresent(RepurposeOutput.self, forKey: .requestedOutput) ?? RepurposeOutput(projectType: type)
+        isFavorite = try container.decodeIfPresent(Bool.self, forKey: .isFavorite) ?? false
+        customGenerationRequest = try container.decodeIfPresent(String.self, forKey: .customGenerationRequest)
+        generatedOutput = try container.decodeIfPresent(String.self, forKey: .generatedOutput)
         createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
         updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? createdAt
     }

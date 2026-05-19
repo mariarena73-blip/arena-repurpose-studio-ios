@@ -2,12 +2,23 @@ import SwiftUI
 
 struct ProjectDetailView: View {
     @EnvironmentObject private var storage: ProjectStorageService
+    @Environment(\.dismiss) private var dismiss
     @State private var project: Project
     @State private var editedContent: String
     @State private var editedTitle: String
+    @State private var editedDescription: String
+    @State private var editedOperationalNotes: String
+    @State private var editedContext: RepurposeContext
+    @State private var editedCustomContext: String
+    @State private var editedAudience: RepurposeAudience
+    @State private var editedCustomAudience: String
+    @State private var editedVoice: RepurposeVoice
+    @State private var editedOutput: RepurposeOutput
     @State private var editedStatus: EditorialStatus
     @State private var isEditing = false
     @State private var showPromptComposer = false
+    @State private var showDeleteConfirmation = false
+    @State private var copyFeedback: String?
     @State private var selectedQuizOption: String? = nil
     @State private var isFlashcardShowingBack = false
     @State private var generatedStructuredDraft: String?
@@ -18,6 +29,14 @@ struct ProjectDetailView: View {
         _project = State(initialValue: project)
         _editedContent = State(initialValue: project.rawContent)
         _editedTitle = State(initialValue: project.title)
+        _editedDescription = State(initialValue: project.description)
+        _editedOperationalNotes = State(initialValue: project.operationalNotes)
+        _editedContext = State(initialValue: project.repurposeContext)
+        _editedCustomContext = State(initialValue: project.customContext)
+        _editedAudience = State(initialValue: project.repurposeAudience)
+        _editedCustomAudience = State(initialValue: project.customAudience)
+        _editedVoice = State(initialValue: project.repurposeVoice)
+        _editedOutput = State(initialValue: project.requestedOutput)
         _editedStatus = State(initialValue: project.status)
         _generatedStructuredDraft = State(initialValue: RepurposeTemplateBuilder.draft(for: project))
     }
@@ -31,6 +50,12 @@ struct ProjectDetailView: View {
                     Label(project.requestedOutput.displayName, systemImage: project.projectType.icon)
                         .font(.system(size: 14))
                         .foregroundColor(.aidTealDigital)
+                    if project.isFavorite {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.aidArancioOro)
+                            .accessibilityLabel("Preferito")
+                    }
                     Spacer()
                     if isEditing {
                         Picker("", selection: $editedStatus) {
@@ -80,16 +105,11 @@ struct ProjectDetailView: View {
 
                 // Titolo (in modalità edit)
                 if isEditing {
-                    VStack(alignment: .leading, spacing: AIDTheme.Spacing.xs) {
-                        Text("Titolo")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                        TextField("Titolo (opzionale)", text: $editedTitle)
-                            .font(.system(size: 16))
-                            .padding(AIDTheme.Spacing.sm)
-                            .background(Color(.systemGray6))
-                            .cornerRadius(AIDTheme.Corner.sm)
-                    }
+                    editTitleSection
+                    editWorkflowSection
+                } else {
+                    detailCopySection
+                    generatedOutputSection
                 }
 
                 // Contenuto
@@ -110,6 +130,10 @@ struct ProjectDetailView: View {
                             .font(.system(size: 15))
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                }
+
+                if isEditing {
+                    editNotesSection
                 }
 
                 Divider()
@@ -137,6 +161,18 @@ struct ProjectDetailView: View {
                             .foregroundColor(.white)
                             .cornerRadius(AIDTheme.Corner.md)
                     }
+
+                    Button(role: .destructive) {
+                        showDeleteConfirmation = true
+                    } label: {
+                        Label("Elimina progetto", systemImage: "trash")
+                            .font(.system(size: 16, weight: .medium))
+                            .frame(maxWidth: .infinity)
+                            .padding(AIDTheme.Spacing.md)
+                            .background(Color.aidFragola.opacity(0.18))
+                            .foregroundColor(.aidFragola)
+                            .cornerRadius(AIDTheme.Corner.md)
+                    }
                 }
             }
             .padding(AIDTheme.Spacing.md)
@@ -145,21 +181,35 @@ struct ProjectDetailView: View {
         .navigationTitle(project.displayTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    toggleFavorite()
+                } label: {
+                    Image(systemName: project.isFavorite ? "star.fill" : "star")
+                }
+                .foregroundColor(project.isFavorite ? .aidArancioOro : .aidTurchese)
+                .accessibilityLabel(project.isFavorite ? "Togli preferito" : "Segna preferito")
+            }
+
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(isEditing ? AIDVoice.Detail.save : AIDVoice.Detail.edit) {
                     if isEditing {
-                        project.title = editedTitle
-                        project.rawContent = editedContent
-                        project.status = editedStatus
-                        project.updatedAt = Date()
-                        storage.save(project)
+                        saveEdits()
                     }
                     isEditing.toggle()
                 }
                 .foregroundColor(.aidTurchese)
             }
         }
-        .sheet(isPresented: $showPromptComposer) {
+        .alert("Eliminare il progetto?", isPresented: $showDeleteConfirmation) {
+            Button("Annulla", role: .cancel) {}
+            Button("Elimina", role: .destructive) {
+                deleteProject()
+            }
+        } message: {
+            Text("Il progetto sara' rimosso da Home e Archivio.")
+        }
+        .sheet(isPresented: $showPromptComposer, onDismiss: refreshProjectFromStorage) {
             NavigationStack {
                 PromptComposerView(project: project, showsCloseButton: true)
             }
@@ -176,6 +226,243 @@ struct ProjectDetailView: View {
     private func copyStructuredDraft(_ draft: String) {
         UIPasteboard.general.string = draft
         didCopyStructuredDraft = true
+    }
+
+    private var editTitleSection: some View {
+        VStack(alignment: .leading, spacing: AIDTheme.Spacing.md) {
+            VStack(alignment: .leading, spacing: AIDTheme.Spacing.xs) {
+                Text("Titolo")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                TextField("Titolo (opzionale)", text: $editedTitle)
+                    .font(.system(size: 16))
+                    .padding(AIDTheme.Spacing.sm)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(AIDTheme.Corner.sm)
+            }
+
+            VStack(alignment: .leading, spacing: AIDTheme.Spacing.xs) {
+                Text(AIDVoice.Capture.shortDescription)
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                TextField(AIDVoice.Capture.shortDescriptionPlaceholder, text: $editedDescription, axis: .vertical)
+                    .lineLimit(2...4)
+                    .font(.system(size: 16))
+                    .padding(AIDTheme.Spacing.sm)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(AIDTheme.Corner.sm)
+            }
+        }
+    }
+
+    private var editWorkflowSection: some View {
+        VStack(alignment: .leading, spacing: AIDTheme.Spacing.md) {
+            Picker(AIDVoice.Capture.context, selection: $editedContext) {
+                ForEach(RepurposeContext.allCases) { context in
+                    Text(context.displayName).tag(context)
+                }
+            }
+
+            if editedContext == .other {
+                TextField(AIDVoice.Capture.customContext, text: $editedCustomContext, axis: .vertical)
+                    .lineLimit(1...3)
+            }
+
+            Picker(AIDVoice.Capture.audience, selection: $editedAudience) {
+                ForEach(RepurposeAudience.allCases) { audience in
+                    Text(audience.displayName).tag(audience)
+                }
+            }
+
+            if editedAudience == .other {
+                TextField(AIDVoice.Capture.customAudience, text: $editedCustomAudience, axis: .vertical)
+                    .lineLimit(1...3)
+            }
+
+            Picker(AIDVoice.Capture.voice, selection: $editedVoice) {
+                ForEach(RepurposeVoice.allCases) { voice in
+                    Text(voice.displayName).tag(voice)
+                }
+            }
+
+            Picker(AIDVoice.Capture.outputType, selection: $editedOutput) {
+                ForEach(RepurposeOutput.allCases) { output in
+                    Text(output.displayName).tag(output)
+                }
+            }
+        }
+        .padding(AIDTheme.Spacing.md)
+        .background(Color.aidGrigioScuro.opacity(0.35))
+        .cornerRadius(AIDTheme.Corner.md)
+    }
+
+    private var editNotesSection: some View {
+        VStack(alignment: .leading, spacing: AIDTheme.Spacing.sm) {
+            Text(AIDVoice.Capture.operationalNotes)
+                .font(.system(size: 12))
+                .foregroundColor(.secondary)
+
+            TextEditor(text: $editedOperationalNotes)
+                .font(.system(size: 15))
+                .frame(minHeight: 120)
+                .padding(AIDTheme.Spacing.sm)
+                .background(Color(.systemGray6))
+                .cornerRadius(AIDTheme.Corner.sm)
+        }
+    }
+
+    private var detailCopySection: some View {
+        CopyActionsView(
+            hasGeneratedOutput: generatedOutputText != nil,
+            feedback: copyFeedback,
+            onCopySource: { copyText(project.rawContent, feedback: "Sorgente copiata") },
+            onCopyRequest: { copyText(currentStructuredRequest, feedback: "Richiesta copiata") },
+            onCopyOutput: {
+                if let generatedOutputText {
+                    copyText(generatedOutputText, feedback: "Output copiato")
+                }
+            }
+        )
+    }
+
+    @ViewBuilder
+    private var generatedOutputSection: some View {
+        if let generatedOutputText {
+            VStack(alignment: .leading, spacing: AIDTheme.Spacing.md) {
+                Text("Output generato")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.aidTurchese)
+
+                Text(generatedOutputText)
+                    .font(.system(size: 15))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(AIDTheme.Spacing.md)
+            .background(Color.aidGrigioScuro.opacity(0.35))
+            .cornerRadius(AIDTheme.Corner.md)
+        }
+    }
+
+    private var currentStructuredRequest: String {
+        let customRequest = project.customGenerationRequest?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if let customRequest, !customRequest.isEmpty {
+            return customRequest
+        }
+        return PromptMasterBuilder.prompt(for: project)
+    }
+
+    private var generatedOutputText: String? {
+        let output = project.generatedOutput?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return output?.isEmpty == true ? nil : output
+    }
+
+    private func saveEdits() {
+        project.title = editedTitle
+        project.description = editedDescription
+        project.status = editedStatus
+        project.type = editedOutput.projectType
+        project.rawContent = editedContent
+        if let lastIndex = project.contentItems.indices.last {
+            project.contentItems[lastIndex].type = project.type
+        }
+        project.operationalNotes = editedOperationalNotes
+        project.repurposeContext = editedContext
+        project.customContext = editedCustomContext
+        project.repurposeAudience = editedAudience
+        project.customAudience = editedCustomAudience
+        project.repurposeVoice = editedVoice
+        project.requestedOutput = editedOutput
+        project.customGenerationRequest = nil
+        project.updatedAt = Date()
+        storage.save(project)
+        refreshProjectFromStorage()
+    }
+
+    private func toggleFavorite() {
+        project.isFavorite.toggle()
+        storage.save(project)
+        refreshProjectFromStorage()
+    }
+
+    private func deleteProject() {
+        storage.delete(project)
+        dismiss()
+    }
+
+    private func copyText(_ text: String, feedback: String) {
+        UIPasteboard.general.string = text
+        copyFeedback = feedback
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            copyFeedback = nil
+        }
+    }
+
+    private func refreshProjectFromStorage() {
+        guard let refreshed = storage.projects.first(where: { $0.id == project.id }) else { return }
+        project = refreshed
+        syncEditedFields(with: refreshed)
+        generatedStructuredDraft = RepurposeTemplateBuilder.draft(for: refreshed)
+    }
+
+    private func syncEditedFields(with project: Project) {
+        editedTitle = project.title
+        editedDescription = project.description
+        editedContent = project.rawContent
+        editedOperationalNotes = project.operationalNotes
+        editedContext = project.repurposeContext
+        editedCustomContext = project.customContext
+        editedAudience = project.repurposeAudience
+        editedCustomAudience = project.customAudience
+        editedVoice = project.repurposeVoice
+        editedOutput = project.requestedOutput
+        editedStatus = project.status
+    }
+}
+
+private struct CopyActionsView: View {
+    let hasGeneratedOutput: Bool
+    let feedback: String?
+    let onCopySource: () -> Void
+    let onCopyRequest: () -> Void
+    let onCopyOutput: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AIDTheme.Spacing.md) {
+            Text("Azioni locali")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.aidTurchese)
+
+            Button(action: onCopySource) {
+                Label("Copia sorgente", systemImage: "doc.on.doc")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+
+            Button(action: onCopyRequest) {
+                Label("Copia richiesta strutturata", systemImage: "doc.text")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+
+            if hasGeneratedOutput {
+                Button(action: onCopyOutput) {
+                    Label("Copia output generato", systemImage: "doc.text")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+            }
+
+            if let feedback {
+                Text(feedback)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.aidTurchese)
+            }
+        }
+        .padding(AIDTheme.Spacing.md)
+        .background(Color.aidGrigioScuro.opacity(0.35))
+        .cornerRadius(AIDTheme.Corner.md)
     }
 }
 

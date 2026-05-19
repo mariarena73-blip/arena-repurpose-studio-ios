@@ -3,10 +3,13 @@ import SwiftUI
 struct ArchiveView: View {
     @EnvironmentObject private var storage: ProjectStorageService
     @State private var filterStatus: EditorialStatus? = nil
+    @State private var projectPendingDeletion: Project?
+    @State private var archiveFeedback: String?
 
     private var filtered: [Project] {
-        guard let s = filterStatus else { return storage.projects }
-        return storage.projects.filter { $0.status == s }
+        let projects = storage.projects.sortedForDisplay
+        guard let s = filterStatus else { return projects }
+        return projects.filter { $0.status == s }
     }
 
     var body: some View {
@@ -51,6 +54,28 @@ struct ArchiveView: View {
                             NavigationLink(destination: ProjectDetailView(project: project)) {
                                 ProjectRowView(project: project)
                             }
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    toggleFavorite(project)
+                                } label: {
+                                    Label(project.isFavorite ? "Togli preferito" : "Preferito", systemImage: project.isFavorite ? "star.slash" : "star")
+                                }
+                                .tint(.aidArancioOro)
+
+                                Button {
+                                    copySource(project)
+                                } label: {
+                                    Label("Copia", systemImage: "doc.on.doc")
+                                }
+                                .tint(.aidOttanioMedio)
+                            }
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    projectPendingDeletion = project
+                                } label: {
+                                    Label("Elimina", systemImage: "trash")
+                                }
+                            }
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
                             .listRowInsets(EdgeInsets(
@@ -60,7 +85,6 @@ struct ArchiveView: View {
                                 trailing: AIDTheme.Spacing.md
                             ))
                         }
-                        .onDelete(perform: deleteItems)
                     }
                     .listStyle(.plain)
                 }
@@ -68,14 +92,62 @@ struct ArchiveView: View {
         }
         .navigationTitle(AIDVoice.Archive.title)
         .navigationBarTitleDisplayMode(.large)
+        .safeAreaInset(edge: .bottom) {
+            if let archiveFeedback {
+                Text(archiveFeedback)
+                    .font(.system(size: 13, weight: .semibold))
+                    .padding(.horizontal, AIDTheme.Spacing.md)
+                    .padding(.vertical, AIDTheme.Spacing.sm)
+                    .background(Color.aidGrigioScuro.opacity(0.9))
+                    .foregroundColor(.aidTurchese)
+                    .cornerRadius(AIDTheme.Corner.sm)
+                    .padding(.bottom, AIDTheme.Spacing.sm)
+            }
+        }
+        .alert("Eliminare il progetto?", isPresented: deleteConfirmationBinding) {
+            Button("Annulla", role: .cancel) {
+                projectPendingDeletion = nil
+            }
+            Button("Elimina", role: .destructive) {
+                confirmDeletion()
+            }
+        } message: {
+            Text("Il progetto sara' rimosso da Home e Archivio.")
+        }
     }
 
-    private func deleteItems(at offsets: IndexSet) {
-        let ids = offsets.map { filtered[$0].id }
-        for id in ids {
-            if let p = storage.projects.first(where: { $0.id == id }) {
-                storage.delete(p)
-            }
+    private var deleteConfirmationBinding: Binding<Bool> {
+        Binding(
+            get: { projectPendingDeletion != nil },
+            set: { if !$0 { projectPendingDeletion = nil } }
+        )
+    }
+
+    private func toggleFavorite(_ project: Project) {
+        var updated = project
+        updated.isFavorite.toggle()
+        storage.save(updated)
+        archiveFeedback = updated.isFavorite ? "Aggiunto ai preferiti" : "Rimosso dai preferiti"
+        clearFeedbackLater()
+    }
+
+    private func copySource(_ project: Project) {
+        UIPasteboard.general.string = project.rawContent
+        archiveFeedback = "Sorgente copiata"
+        clearFeedbackLater()
+    }
+
+    private func confirmDeletion() {
+        guard let projectPendingDeletion else { return }
+        storage.delete(projectPendingDeletion)
+        self.projectPendingDeletion = nil
+        archiveFeedback = "Progetto eliminato"
+        clearFeedbackLater()
+    }
+
+    private func clearFeedbackLater() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            archiveFeedback = nil
         }
     }
 }
