@@ -4,6 +4,8 @@ This roadmap starts from the current verified remote baseline: `af68fcb Realign 
 
 The roadmap still avoids backend, direct AI APIs, Expo, React Native, and new product surfaces until local iPhone flows and tests are intentionally expanded.
 
+Product alignment note: see `docs/PRD.md` for the current product boundary. In this phase the app generates a prompt master, not the final AI output. Prefer wording such as "Genera prompt master" or "Prepara output"; reserve "Genera contenuto finale" for a future approved LLM mode.
+
 ## Phase 1: Recover Build Baseline
 
 Status: completed.
