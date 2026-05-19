@@ -4,7 +4,7 @@ This roadmap starts from the current verified remote baseline: `af68fcb Realign 
 
 The roadmap still avoids backend, direct AI APIs, Expo, React Native, and new product surfaces until local iPhone flows and tests are intentionally expanded.
 
-Product alignment note: see `docs/PRD.md` for the current product boundary. In this phase the app generates a prompt master, not the final AI output. Prefer wording such as "Genera prompt master" or "Prepara output"; reserve "Genera contenuto finale" for a future approved LLM mode.
+Product alignment note: see `docs/PRD.md` for the current product boundary. The app is designed to produce final editorial, didactic, and training outputs, but in the current implementation final generation is routed through Copy/Shortcut rather than an in-app AI runtime. Prefer wording such as "Genera con Ai Nota Taker" or "Prepara output con Ai Nota Taker"; keep prompt copy as a secondary/manual action.
 
 ## Phase 1: Recover Build Baseline
 
@@ -88,12 +88,12 @@ Recommended tests:
 
 - `Project` encode/decode round trip.
 - Legacy `Project` decode coverage for pre-`af68fcb` saved drafts.
-- `SourceKind`, `RepurposeContext`, `RepurposeAudience`, `RepurposeVoice`, and `RepurposeOutput` display/prompt behavior.
+- `SourceKind`, `RepurposeContext`, `RepurposeAudience`, `RepurposeVoice`, and `RepurposeOutput` display/request behavior.
 - `RepurposeOutput` -> `ProjectType` temporary mapping.
-- Master prompt content checks for source, context, audience, tone, output, structure, quality criteria, Italian language, no invented data, and insufficient-information handling.
+- Structured generation request content checks for source, context, audience, tone, requested final output, structure, quality criteria, Italian language, no invented data, and insufficient-information handling.
 - `ProjectStorageService` save/load/delete behavior with an injectable file URL or test-safe storage boundary.
 - UI smoke test for app launch.
-- UI smoke test for create content -> archive -> detail -> prompt.
+- UI smoke test for create content -> archive -> detail -> generation request / Shortcut handoff.
 
 Recommended skill support:
 
@@ -114,14 +114,14 @@ Recommended work:
 
 Classification: local storage hardening.
 
-## Phase 7: Consolidate AID Repurpose Quality
+## Phase 7: Consolidate AID Repurpose Output Quality
 
 Status: priority 3 after targeted tests and storage stabilization.
 
 Recommended work:
 
-- Review prompt and template language against AID didactic use cases.
-- Keep transformations local and copy/Shortcut-based unless a future task explicitly approves API integration.
+- Review structured generation requests and final-output templates against AID editorial, Prof Arena didactic, and LevelUp / Scienze Motorie use cases.
+- Keep generation routed through local copy/Shortcut handoff unless a future task explicitly approves API integration.
 - Use the skill map in `docs/reusable-skills-found.md` to choose the right Codex helper for each output type.
 - Prioritize `content-transformer`, `aid-agent-codex-docs`, `prompt-generator-for-codex`, `rap-post-didattici-skill`, and `pedagogia-applicata-ai-lab`.
 
@@ -133,7 +133,7 @@ Status: priority 4 after tests and storage.
 
 Recommended work:
 
-- Make small, focused SwiftUI improvements only after the model, prompt, and storage tests are stable.
+- Make small, focused SwiftUI improvements only after the model, output-request, and storage tests are stable.
 - Keep existing tab structure and avoid new product surfaces unless a separate UI task scopes them.
 - Do not modify `MainTabView` as part of this roadmap step.
 
@@ -143,9 +143,9 @@ Classification: future UI polish.
 
 Status: future only.
 
-Only after local tests and prompt quality are stable:
+Only after local tests and final-output quality are stable:
 
-- Evaluate whether prompt composition remains local or calls an AI API.
+- Evaluate whether structured generation remains routed through Copy/Shortcut or calls a future approved AI mode.
 - Evaluate whether a backend is needed.
 - Evaluate whether builder automation can generate this app pattern.
 - Evaluate which patterns should migrate to the private skill-library.
