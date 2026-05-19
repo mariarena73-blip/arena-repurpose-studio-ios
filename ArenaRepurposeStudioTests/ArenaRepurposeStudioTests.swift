@@ -154,6 +154,9 @@ final class ArenaRepurposeStudioTests: XCTestCase {
 
         let prompt = PromptMasterBuilder.prompt(for: project)
 
+        XCTAssertContains(prompt, "RICHIESTA STRUTTURATA PER AI NOTA TAKER")
+        XCTAssertContains(prompt, "Produci direttamente l'output finale richiesto")
+        XCTAssertContains(prompt, "Non restituire un nuovo prompt")
         XCTAssertContains(prompt, "RUOLO OPERATIVO DELL'ASSISTENTE")
         XCTAssertContains(prompt, "assistente esperto di repurposing didattico, editoriale e operativo")
         XCTAssertContains(prompt, "TIPO DI SORGENTE")
@@ -175,10 +178,11 @@ final class ArenaRepurposeStudioTests: XCTestCase {
         XCTAssertContains(prompt, "TONO DI VOCE")
         XCTAssertContains(prompt, RepurposeVoice.profArena.displayName)
         XCTAssertContains(prompt, RepurposeVoice.profArena.promptInstruction)
-        XCTAssertContains(prompt, "OUTPUT RICHIESTO")
+        XCTAssertContains(prompt, "OUTPUT FINALE RICHIESTO")
         XCTAssertContains(prompt, RepurposeOutput.powerpointOutline.displayName)
         XCTAssertContains(prompt, "LINGUA DI OUTPUT")
         XCTAssertContains(prompt, "Italiano.")
+        XCTAssertContains(prompt, "Produci l'output finale richiesto, non un prompt generico.")
         XCTAssertContains(prompt, "STRUTTURA ATTESA DELL'OUTPUT")
         XCTAssertContains(prompt, RepurposeOutput.powerpointOutline.structureGuide)
         XCTAssertContains(prompt, "CRITERI DI QUALITA")
@@ -188,6 +192,50 @@ final class ArenaRepurposeStudioTests: XCTestCase {
         XCTAssertContains(prompt, "segnala chiaramente quali dati mancano")
         XCTAssertContains(prompt, "FORMATO FINALE RICHIESTO")
         XCTAssertContains(prompt, RepurposeOutput.powerpointOutline.finalFormat)
+    }
+
+    func testRepurposeTemplateBuilderCreatesStructuredFinalOutputRequest() throws {
+        let project = Project(
+            title: "Inclusione in palestra",
+            description: "Preparare un contenuto social operativo.",
+            type: .facebookPostAid,
+            status: .draft,
+            contentItems: [
+                ContentItem(body: "Appunti su peer tutoring e adattamenti per BES.", type: .facebookPostAid)
+            ],
+            sourceKind: .pastedText,
+            sourceText: "Appunti su peer tutoring e adattamenti per BES.",
+            operationalNotes: "Evitare toni promozionali.",
+            repurposeContext: .socialAID,
+            customContext: "",
+            repurposeAudience: .teachers,
+            customAudience: "",
+            repurposeVoice: .aid,
+            requestedOutput: .facebookPost
+        )
+
+        let request = try XCTUnwrap(RepurposeTemplateBuilder.draft(for: project))
+
+        XCTAssertContains(request, "RICHIESTA DI GENERAZIONE PER AI NOTA TAKER")
+        XCTAssertContains(request, "Produci direttamente l'output finale richiesto")
+        XCTAssertContains(request, "non restituire istruzioni astratte")
+        XCTAssertContains(request, "SORGENTE")
+        XCTAssertContains(request, "Appunti su peer tutoring e adattamenti per BES.")
+        XCTAssertContains(request, "CONTESTO")
+        XCTAssertContains(request, RepurposeContext.socialAID.displayName)
+        XCTAssertContains(request, "DESTINATARI")
+        XCTAssertContains(request, RepurposeAudience.teachers.displayName)
+        XCTAssertContains(request, "TONO DI VOCE")
+        XCTAssertContains(request, RepurposeVoice.aid.promptInstruction)
+        XCTAssertContains(request, "OUTPUT FINALE RICHIESTO")
+        XCTAssertContains(request, RepurposeOutput.facebookPost.displayName)
+        XCTAssertContains(request, "STRUTTURA ATTESA")
+        XCTAssertContains(request, RepurposeOutput.facebookPost.structureGuide)
+        XCTAssertContains(request, "CRITERI DI QUALITA")
+        XCTAssertContains(request, RepurposeOutput.facebookPost.qualityCriteria)
+        XCTAssertContains(request, "Non inventare dati mancanti.")
+        XCTAssertContains(request, "Se le informazioni sono insufficienti")
+        XCTAssertContains(request, "segnala chiaramente quali dati mancano")
     }
 
     private func XCTAssertContains(

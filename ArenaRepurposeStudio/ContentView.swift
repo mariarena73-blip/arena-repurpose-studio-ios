@@ -21,7 +21,7 @@ struct MainTabView: View {
                 PromptComposerView()
             }
             .tabItem {
-                Label("Prompt", systemImage: "wand.and.stars")
+                Label("Genera", systemImage: "wand.and.stars")
             }
         }
         .tint(AIDTheme.Color.accentFallback)

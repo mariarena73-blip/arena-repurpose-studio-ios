@@ -124,7 +124,7 @@ struct ProjectDetailView: View {
                         .foregroundColor(.secondary)
                 }
 
-                // Pulsante Componi prompt
+                // Handoff alla generazione esterna corrente.
                 if !isEditing {
                     Button {
                         showPromptComposer = true
@@ -232,6 +232,10 @@ private struct StructuredDraftView: View {
             Text(AIDVoice.Detail.structuredDraft)
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.aidTurchese)
+
+            Text(AIDVoice.Detail.structuredDraftNote)
+                .font(.system(size: 13))
+                .foregroundColor(.secondary)
 
             Text(draft)
                 .font(.system(.body, design: .monospaced))

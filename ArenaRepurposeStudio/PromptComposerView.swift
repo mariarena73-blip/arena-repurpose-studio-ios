@@ -4,6 +4,11 @@ import UIKit
 enum PromptMasterBuilder {
     static func prompt(for project: Project) -> String {
         """
+        RICHIESTA STRUTTURATA PER AI NOTA TAKER
+
+        OBIETTIVO DI GENERAZIONE
+        Produci direttamente l'output finale richiesto. Non restituire un nuovo prompt, una bozza di prompt o istruzioni generiche: usa questa richiesta come brief operativo per creare il contenuto finale.
+
         RUOLO OPERATIVO DELL'ASSISTENTE
         Agisci come assistente esperto di repurposing didattico, editoriale e operativo. Trasforma il materiale fornito in un output pronto da usare, mantenendo metodo, chiarezza e aderenza alla sorgente.
 
@@ -11,7 +16,7 @@ enum PromptMasterBuilder {
         \(project.sourceKind.displayName)
 
         CONTENUTO SORGENTE O RIFERIMENTO
-        \(project.rawContent)
+        \(valueOrNone(project.rawContent))
 
         DESCRIZIONE BREVE
         \(valueOrNone(project.description))
@@ -34,13 +39,14 @@ enum PromptMasterBuilder {
         TONO DI VOCE
         \(project.repurposeVoice.displayName): \(project.repurposeVoice.promptInstruction).
 
-        OUTPUT RICHIESTO
+        OUTPUT FINALE RICHIESTO
         \(project.requestedOutput.displayName)
 
         LINGUA DI OUTPUT
         Italiano.
 
         VINCOLI
+        - Produci l'output finale richiesto, non un prompt generico.
         - Non inventare dati mancanti.
         - Se le informazioni sono insufficienti, segnala chiaramente quali dati mancano prima di proporre l'output.
         - Non fare parsing file, fetch URL, transcript YouTube o scraping: usa solo il contenuto o riferimento fornito.
@@ -177,7 +183,11 @@ struct PromptComposerView: View {
                 shortcutSection
 
                 Text(AIDVoice.PromptComposer.promptToCopy)
-                    .font(.system(size: 14))
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.aidTurchese)
+
+                Text(AIDVoice.PromptComposer.technicalViewNote)
+                    .font(.system(size: 13))
                     .foregroundColor(.secondary)
 
                 Text(prompt)
@@ -195,9 +205,13 @@ struct PromptComposerView: View {
                     .font(.system(size: 16, weight: .medium))
                     .frame(maxWidth: .infinity)
                     .padding(AIDTheme.Spacing.md)
-                    .background(isCopied ? Color.aidOttanioMedio : Color.aidOttanioScuro)
-                    .foregroundColor(.white)
+                    .background(Color.aidGrigioScuro.opacity(0.45))
+                    .foregroundColor(isCopied ? .aidSupportGreen : .aidTurchese)
                     .cornerRadius(AIDTheme.Corner.md)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AIDTheme.Corner.md)
+                            .stroke(isCopied ? Color.aidSupportGreen : Color.aidTurchese.opacity(0.6), lineWidth: 1)
+                    )
                 }
             }
             .padding(AIDTheme.Spacing.md)
@@ -230,7 +244,7 @@ struct PromptComposerView: View {
                     installURLString: notaInstallURL
                 )
             } label: {
-                Label(AIDVoice.PromptComposer.note, systemImage: "note.text")
+                Label(AIDVoice.PromptComposer.note, systemImage: "wand.and.stars")
                     .font(.system(size: 15, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(AIDTheme.Spacing.md)
