@@ -76,7 +76,13 @@ struct PromptComposerView: View {
     @State private var isCopied = false
     @State private var shortcutFeedback: String?
     @State private var shortcutInstallURL: URL?
+    @State private var openRouterAPIKey = ""
+    @State private var isGeneratingOpenRouterOutput = false
+    @State private var openRouterOutput: String?
+    @State private var openRouterModelUsed: String?
+    @State private var openRouterErrorMessage: String?
     private let showsCloseButton: Bool
+    private let openRouterService = OpenRouterService()
     private let notaShortcutURL = "shortcuts://run-shortcut?name=Ai%20Nota%20Taker&input=clipboard"
     private let notaInstallURL = "https://www.icloud.com/shortcuts/83a662925948483dbffb2825f1953ea7"
 
@@ -108,9 +114,7 @@ struct PromptComposerView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(AIDVoice.PromptComposer.chooseProject) {
                         selectedProject = nil
-                        shortcutFeedback = nil
-                        shortcutInstallURL = nil
-                        isCopied = false
+                        resetGeneratedState()
                     }
                 }
             }
@@ -139,9 +143,7 @@ struct PromptComposerView: View {
                         ForEach(storage.projects) { project in
                             Button {
                                 selectedProject = project
-                                shortcutFeedback = nil
-                                shortcutInstallURL = nil
-                                isCopied = false
+                                resetGeneratedState()
                             } label: {
                                 ProjectRowView(project: project)
                             }
@@ -181,6 +183,7 @@ struct PromptComposerView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: AIDTheme.Spacing.lg) {
                 shortcutSection
+                openRouterSection
 
                 Text(AIDVoice.PromptComposer.promptToCopy)
                     .font(.system(size: 18, weight: .semibold))
@@ -225,6 +228,124 @@ struct PromptComposerView: View {
         isCopied = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             isCopied = false
+        }
+    }
+
+    private func resetGeneratedState() {
+        shortcutFeedback = nil
+        shortcutInstallURL = nil
+        isCopied = false
+        isGeneratingOpenRouterOutput = false
+        openRouterOutput = nil
+        openRouterModelUsed = nil
+        openRouterErrorMessage = nil
+    }
+
+    private var openRouterSection: some View {
+        VStack(alignment: .leading, spacing: AIDTheme.Spacing.md) {
+            Text("OpenRouter sperimentale")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.aidTurchese)
+
+            Text("Genera direttamente in app l'output finale usando la richiesta strutturata. Ai Nota Taker resta disponibile come bridge esterno.")
+                .font(.system(size: 13))
+                .foregroundColor(.secondary)
+
+            SecureField("API key OpenRouter", text: $openRouterAPIKey)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled(true)
+                .textContentType(.password)
+                .font(.system(size: 15))
+                .padding(AIDTheme.Spacing.md)
+                .background(Color(.systemGray6))
+                .cornerRadius(AIDTheme.Corner.sm)
+
+            Button {
+                Task {
+                    await generateOutputWithOpenRouter()
+                }
+            } label: {
+                Label("Genera output con OpenRouter", systemImage: "sparkles")
+                    .font(.system(size: 15, weight: .semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(AIDTheme.Spacing.md)
+                    .background(Color.aidOttanioMedio)
+                    .foregroundColor(.white)
+                    .cornerRadius(AIDTheme.Corner.md)
+            }
+            .disabled(isGeneratingOpenRouterOutput)
+            .opacity(isGeneratingOpenRouterOutput ? 0.75 : 1)
+
+            if isGeneratingOpenRouterOutput {
+                HStack(spacing: AIDTheme.Spacing.sm) {
+                    ProgressView()
+                        .tint(.aidTurchese)
+                    Text("Generazione in corso...")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            if let openRouterErrorMessage {
+                Text(openRouterErrorMessage)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.aidFragola)
+            }
+
+            if let openRouterModelUsed {
+                Text("Modello usato: \(openRouterModelUsed)")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.aidArancioOro)
+            }
+
+            if let openRouterOutput {
+                VStack(alignment: .leading, spacing: AIDTheme.Spacing.sm) {
+                    Text("Output generato")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.aidTurchese)
+
+                    Text(openRouterOutput)
+                        .font(.system(size: 15))
+                        .padding(AIDTheme.Spacing.md)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(AIDTheme.Corner.sm)
+                }
+            }
+        }
+        .padding(AIDTheme.Spacing.md)
+        .background(Color.aidGrigioScuro.opacity(0.35))
+        .cornerRadius(AIDTheme.Corner.md)
+    }
+
+    @MainActor
+    private func generateOutputWithOpenRouter() async {
+        let trimmedAPIKey = openRouterAPIKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedAPIKey.isEmpty else {
+            openRouterErrorMessage = "Inserisci una API key OpenRouter."
+            return
+        }
+
+        isGeneratingOpenRouterOutput = true
+        openRouterOutput = nil
+        openRouterModelUsed = nil
+        openRouterErrorMessage = nil
+
+        defer {
+            isGeneratingOpenRouterOutput = false
+        }
+
+        do {
+            let result = try await openRouterService.generateOutput(
+                for: prompt,
+                apiKey: trimmedAPIKey
+            )
+            openRouterOutput = result.content
+            openRouterModelUsed = result.model
+        } catch let error as LocalizedError {
+            openRouterErrorMessage = error.errorDescription ?? "Errore OpenRouter non previsto."
+        } catch {
+            openRouterErrorMessage = "Errore OpenRouter non previsto."
         }
     }
 

@@ -238,6 +238,63 @@ final class ArenaRepurposeStudioTests: XCTestCase {
         XCTAssertContains(request, "segnala chiaramente quali dati mancano")
     }
 
+    func testOpenRouterRequestBodyUsesFreeRouterAndStructuredRequest() throws {
+        let structuredRequest = "RICHIESTA STRUTTURATA\nProduci direttamente l'output finale."
+        let data = try OpenRouterService.makeRequestBody(for: structuredRequest)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        XCTAssertEqual(object["model"] as? String, OpenRouterService.defaultModel)
+
+        let messages = try XCTUnwrap(object["messages"] as? [[String: Any]])
+        XCTAssertEqual(messages.count, 1)
+        XCTAssertEqual(messages.first?["role"] as? String, "user")
+        XCTAssertEqual(messages.first?["content"] as? String, structuredRequest)
+    }
+
+    func testOpenRouterResponseDecoderReadsContentAndModel() throws {
+        let responseJSON = """
+        {
+          "id": "gen-123",
+          "model": "provider/free-model",
+          "choices": [
+            {
+              "message": {
+                "role": "assistant",
+                "content": "Output finale generato"
+              }
+            }
+          ]
+        }
+        """
+
+        let result = try OpenRouterService.decodedGenerationResult(from: Data(responseJSON.utf8))
+
+        XCTAssertEqual(result.content, "Output finale generato")
+        XCTAssertEqual(result.model, "provider/free-model")
+    }
+
+    func testOpenRouterResponseDecoderRejectsEmptyContent() {
+        let responseJSON = """
+        {
+          "model": "openrouter/free",
+          "choices": [
+            {
+              "message": {
+                "role": "assistant",
+                "content": "   "
+              }
+            }
+          ]
+        }
+        """
+
+        XCTAssertThrowsError(
+            try OpenRouterService.decodedGenerationResult(from: Data(responseJSON.utf8))
+        ) { error in
+            XCTAssertEqual(error as? OpenRouterServiceError, .emptyContent)
+        }
+    }
+
     private func XCTAssertContains(
         _ string: String,
         _ substring: String,
