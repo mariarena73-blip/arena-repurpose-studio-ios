@@ -1,25 +1,9 @@
 import SwiftUI
 import UIKit
 
-struct PromptComposerView: View {
-    @EnvironmentObject private var storage: ProjectStorageService
-    @Environment(\.dismiss) private var dismiss
-    @State private var selectedProject: Project?
-    @State private var isCopied = false
-    @State private var shortcutFeedback: String?
-    @State private var shortcutInstallURL: URL?
-    private let showsCloseButton: Bool
-    private let notaShortcutURL = "shortcuts://run-shortcut?name=Ai%20Nota%20Taker&input=clipboard"
-    private let notaInstallURL = "https://www.icloud.com/shortcuts/83a662925948483dbffb2825f1953ea7"
-
-    init(project: Project? = nil, showsCloseButton: Bool = false) {
-        _selectedProject = State(initialValue: project)
-        self.showsCloseButton = showsCloseButton
-    }
-
-    private var prompt: String {
-        guard let project = selectedProject else { return "" }
-        return """
+enum PromptMasterBuilder {
+    static func prompt(for project: Project) -> String {
+        """
         RUOLO OPERATIVO DELL'ASSISTENTE
         Agisci come assistente esperto di repurposing didattico, editoriale e operativo. Trasforma il materiale fornito in un output pronto da usare, mantenendo metodo, chiarezza e aderenza alla sorgente.
 
@@ -71,6 +55,33 @@ struct PromptComposerView: View {
         FORMATO FINALE RICHIESTO
         \(project.requestedOutput.finalFormat)
         """
+    }
+
+    private static func valueOrNone(_ value: String) -> String {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "Non presente." : value
+    }
+}
+
+struct PromptComposerView: View {
+    @EnvironmentObject private var storage: ProjectStorageService
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedProject: Project?
+    @State private var isCopied = false
+    @State private var shortcutFeedback: String?
+    @State private var shortcutInstallURL: URL?
+    private let showsCloseButton: Bool
+    private let notaShortcutURL = "shortcuts://run-shortcut?name=Ai%20Nota%20Taker&input=clipboard"
+    private let notaInstallURL = "https://www.icloud.com/shortcuts/83a662925948483dbffb2825f1953ea7"
+
+    init(project: Project? = nil, showsCloseButton: Bool = false) {
+        _selectedProject = State(initialValue: project)
+        self.showsCloseButton = showsCloseButton
+    }
+
+    private var prompt: String {
+        guard let project = selectedProject else { return "" }
+        return PromptMasterBuilder.prompt(for: project)
     }
 
     var body: some View {
@@ -201,11 +212,6 @@ struct PromptComposerView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             isCopied = false
         }
-    }
-
-    private func valueOrNone(_ value: String) -> String {
-        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "Non presente." : value
     }
 
     private var shortcutSection: some View {
