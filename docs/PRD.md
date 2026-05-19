@@ -106,6 +106,16 @@ Il prompt rimane un payload interno. Puo' essere copiato manualmente quando serv
 - Comment sequence.
 - SEO article.
 
+Regola per gli output "Post Facebook AID":
+
+- Il post principale deve seguire il tono editoriale AID: leggibile, argomentativo, operativo e non promozionale.
+- Il post principale non deve essere strutturato come prompt, salvo richiesta esplicita dell'utente.
+- Eventuali prompt operativi, strumenti o approfondimenti devono essere collocati nei commenti.
+- Il Perfect Prompt Framework deve essere tradotto in italiano e trattato come "Top Prompt Aid".
+- Il Top Prompt Aid si usa solo quando il formato richiesto prevede prompt, catene di prompt, comment sequence o strumenti operativi.
+- Il framework italiano deve usare sezioni come: CONTESTO, RUOLO, AZIONE, VINCOLI, FORMATO, TARGET, ESEMPI, CONTROLLO QUALITÀ.
+- Non applicare automaticamente il framework a tutti i post Facebook.
+
 ### Prof Arena didactic
 
 - Lesson summary.
