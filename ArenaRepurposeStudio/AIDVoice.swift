@@ -22,7 +22,17 @@ enum AIDVoice {
     enum Capture {
         static let titleField = "Titolo"
         static let placeholder = "Scrivi la tua idea, nota o bozza..."
-        static let outputType = "Tipo output"
+        static let sourceReferenceNote = "In questa fase il riferimento resta manuale: nessun import, parsing, fetch o download."
+        static let shortDescription = "Descrizione breve"
+        static let shortDescriptionPlaceholder = "Aggiungi una descrizione opzionale..."
+        static let operationalNotes = "Note operative"
+        static let operationalNotesPlaceholder = "Vincoli, obiettivi, punti da rispettare..."
+        static let context = "Contesto"
+        static let customContext = "Contesto personalizzato"
+        static let audience = "Destinatari"
+        static let customAudience = "Destinatari personalizzati"
+        static let voice = "Tono di voce"
+        static let outputType = "Output richiesto"
         static let saveAsDraft = "Salva come bozza"
         static let saved = "Salvato"
         static let youtubeTranscriptNote = "Estrazione automatica trascrizione non ancora attiva. Incolla la trascrizione per il repurpose locale."
@@ -30,11 +40,14 @@ enum AIDVoice {
 
     enum NewContent {
         static let title = "Nuovo contenuto"
-        static let subtitle = "Scegli il formato"
+        static let subtitle = "Scegli il tipo di sorgente"
     }
 
     enum Detail {
         static let content = "Contenuto"
+        static let workflow = "Workflow repurpose"
+        static let source = "Sorgente"
+        static let notes = "Note operative"
         static let createdAt = "Creato"
         static let edit = "Modifica"
         static let save = "Salva"

@@ -28,7 +28,7 @@ struct ProjectDetailView: View {
 
                 // Metadati
                 HStack {
-                    Label(project.projectType.displayName, systemImage: project.projectType.icon)
+                    Label(project.requestedOutput.displayName, systemImage: project.projectType.icon)
                         .font(.system(size: 14))
                         .foregroundColor(.aidTealDigital)
                     Spacer()
@@ -46,6 +46,11 @@ struct ProjectDetailView: View {
                 }
 
                 Divider()
+
+                if !isEditing {
+                    RepurposeMetadataView(project: project)
+                    Divider()
+                }
 
                 if !isEditing {
                     switch project.type {
@@ -171,6 +176,47 @@ struct ProjectDetailView: View {
     private func copyStructuredDraft(_ draft: String) {
         UIPasteboard.general.string = draft
         didCopyStructuredDraft = true
+    }
+}
+
+private struct RepurposeMetadataView: View {
+    let project: Project
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AIDTheme.Spacing.md) {
+            Text(AIDVoice.Detail.workflow)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.aidTurchese)
+
+            VStack(alignment: .leading, spacing: AIDTheme.Spacing.sm) {
+                metadataRow(label: AIDVoice.Detail.source, value: project.sourceKind.displayName)
+                metadataRow(label: AIDVoice.Capture.outputType, value: project.requestedOutput.displayName)
+                metadataRow(label: AIDVoice.Capture.context, value: project.contextDisplayName)
+                metadataRow(label: AIDVoice.Capture.audience, value: project.audienceDisplayName)
+                metadataRow(label: AIDVoice.Capture.voice, value: project.repurposeVoice.displayName)
+
+                let notes = project.operationalNotes.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !notes.isEmpty {
+                    metadataRow(label: AIDVoice.Detail.notes, value: notes)
+                }
+            }
+        }
+        .padding(AIDTheme.Spacing.md)
+        .background(Color.aidGrigioScuro.opacity(0.35))
+        .cornerRadius(AIDTheme.Corner.md)
+    }
+
+    private func metadataRow(label: String, value: String) -> some View {
+        HStack(alignment: .top, spacing: AIDTheme.Spacing.sm) {
+            Text(label)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.secondary)
+                .frame(width: 96, alignment: .leading)
+            Text(value)
+                .font(.system(size: 14))
+                .foregroundColor(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 }
 

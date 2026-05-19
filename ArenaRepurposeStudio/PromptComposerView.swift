@@ -20,15 +20,56 @@ struct PromptComposerView: View {
     private var prompt: String {
         guard let project = selectedProject else { return "" }
         return """
-        Contesto: \(project.projectType.promptContext)
+        RUOLO OPERATIVO DELL'ASSISTENTE
+        Agisci come assistente esperto di repurposing didattico, editoriale e operativo. Trasforma il materiale fornito in un output pronto da usare, mantenendo metodo, chiarezza e aderenza alla sorgente.
 
-        Materiale di partenza:
+        TIPO DI SORGENTE
+        \(project.sourceKind.displayName)
+
+        CONTENUTO SORGENTE O RIFERIMENTO
         \(project.rawContent)
 
-        Obiettivo: Trasforma il materiale di partenza in \(project.projectType.displayName.lowercased()).
-        Lingua: italiano.
-        Struttura: chiara, diretta, orientata all'uso pratico in aula.
-        Criteri di qualità: metodo verificabile, adattabile a diversi livelli, senza linguaggio promozionale.
+        DESCRIZIONE BREVE
+        \(valueOrNone(project.description))
+
+        NOTE OPERATIVE
+        \(valueOrNone(project.operationalNotes))
+
+        CONTESTO SELEZIONATO
+        \(project.repurposeContext.displayName)
+
+        EVENTUALE CONTESTO PERSONALIZZATO
+        \(valueOrNone(project.customContext))
+
+        DESTINATARI SELEZIONATI
+        \(project.repurposeAudience.displayName)
+
+        EVENTUALI DESTINATARI PERSONALIZZATI
+        \(valueOrNone(project.customAudience))
+
+        TONO DI VOCE
+        \(project.repurposeVoice.displayName): \(project.repurposeVoice.promptInstruction).
+
+        OUTPUT RICHIESTO
+        \(project.requestedOutput.displayName)
+
+        LINGUA DI OUTPUT
+        Italiano.
+
+        VINCOLI
+        - Non inventare dati mancanti.
+        - Se le informazioni sono insufficienti, segnala chiaramente quali dati mancano prima di proporre l'output.
+        - Non fare parsing file, fetch URL, transcript YouTube o scraping: usa solo il contenuto o riferimento fornito.
+        - Mantieni il risultato coerente con contesto, destinatari e tono selezionati.
+
+        STRUTTURA ATTESA DELL'OUTPUT
+        \(project.requestedOutput.structureGuide)
+
+        CRITERI DI QUALITA
+        \(project.requestedOutput.qualityCriteria)
+
+        FORMATO FINALE RICHIESTO
+        \(project.requestedOutput.finalFormat)
         """
     }
 
@@ -122,11 +163,11 @@ struct PromptComposerView: View {
     private var composerContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AIDTheme.Spacing.lg) {
+                shortcutSection
+
                 Text(AIDVoice.PromptComposer.promptToCopy)
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)
-
-                shortcutSection
 
                 Text(prompt)
                     .font(.system(.body, design: .monospaced))
@@ -160,6 +201,11 @@ struct PromptComposerView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             isCopied = false
         }
+    }
+
+    private func valueOrNone(_ value: String) -> String {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "Non presente." : value
     }
 
     private var shortcutSection: some View {
