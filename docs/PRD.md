@@ -126,10 +126,22 @@ Il prompt rimane un payload interno. Puo' essere copiato manualmente quando serv
 
 ## Risorse di tono e stile
 
-Le risorse di tono incluse nel progetto sono materiali di riferimento per progettare richieste di generazione e template futuri. Non sono integrate nel runtime SwiftUI e non introducono networking o API.
+Le risorse incluse nel progetto sono materiali di riferimento per progettare richieste di generazione e template futuri. Non sono integrate nel runtime SwiftUI e non introducono networking, API, parsing automatico o import documentale nella fase corrente.
 
 - `docs/resources/aid-tone-of-voice/tone_of_voice_aid_post_facebook_top_prompt_aid_e_blog.md`: tono AID per post Facebook, top prompt, comment sequence e blog.
 - `docs/resources/aid-tone-of-voice/Tono di Voce Aid stile Universitario #Project Work 9_1 Scienze Motorie.md`: esempio e stile universitario per Project Work 9.1 Scienze Motorie.
+- `docs/resources/didactic-output-examples/`: esempi di materiali didattici reali per primo anno e quinto anno, da usare come riferimento per struttura, livello di semplificazione, domande guida, mappe, riepiloghi, formule e organizzazione disciplinare.
+
+Gli output didattici futuri devono poter imitare questi tratti quando l'utente richiede materiale simile:
+
+- spiegazione chiara e diretta per la classe target;
+- definizioni essenziali prima dei passaggi complessi;
+- esempi concreti dopo le definizioni;
+- domande guida o domande probabili per verifica/interrogazione;
+- riepilogo finale o mappa/schema;
+- tabelle comparative quando aiutano la comprensione;
+- formule e procedimenti passo-passo nelle materie tecniche;
+- struttura accessibile anche per studenti BES/DSA.
 
 ## MVP attuale
 
